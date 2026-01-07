@@ -2,13 +2,19 @@ package com.example.mycloset.data.model
 
 import com.google.firebase.firestore.Exclude
 
-data class Outfit(
-    val outfitId: String = "",
+data class Item(
+    val itemId: String = "",
+    //  val itemName: String = "",
     val ownerUid: String = "",
-    val name: String = "",
+    val parentClosetId: String = "",
+    val itemImageUri: String = "",
+    val createdAt: Long = System.currentTimeMillis(),
     val visibility: String = Visibility.PRIVATE.name,
-    val itemIds: List<String> = emptyList(),
-    val createdAt: Long = System.currentTimeMillis()
+
+    val type: String = "",
+    val color: String = "",
+    val season: String = "",
+    val tags: List<String> = emptyList()
 ){
     @get:Exclude
     val visibilityEnum: Visibility
