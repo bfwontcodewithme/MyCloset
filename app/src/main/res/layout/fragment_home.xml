@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFF1F6"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/tvHomeTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="MyCloset - Home"
+        android:textStyle="bold"
+        android:textSize="22sp"
+        android:textColor="#AD1457"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <Button
+        android:id="@+id/btnGoClosets"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Closets"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#EC407A"
+        app:layout_constraintTop_toBottomOf="@id/tvHomeTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="18dp"/>
+
+    <Button
+        android:id="@+id/btnGoOutfits"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Outfits"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#EC407A"
+        app:layout_constraintTop_toBottomOf="@id/btnGoClosets"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <!-- ✅ חדש: קיצור דרך לתהליך המרכזי -->
+    <Button
+        android:id="@+id/btnAddItem"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Add Item"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#D81B60"
+        app:layout_constraintTop_toBottomOf="@id/btnGoOutfits"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <Button
+        android:id="@+id/btnMyItems"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="My Items"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#EC407A"
+        app:layout_constraintTop_toBottomOf="@id/btnAddItem"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Logout"
+        android:textColor="#D81B60"
+        android:backgroundTint="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/btnMyItems"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="18dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

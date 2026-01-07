@@ -5,3 +5,19 @@ enum class Visibility {
     FRIENDS_ONLY,
     PRIVATE
 }
+// Firebase --> App
+fun String.toVisibility(): Visibility {
+    return try {
+        Visibility.valueOf(this.uppercase())
+    } catch (e: Exception) {
+        Visibility.PRIVATE
+    }
+}
+// App --> Firebase
+fun Item.updateVisibility(newVisibility: Visibility): Item {
+    return this.copy(visibility = newVisibility.name)
+}
+
+fun Closet.updateVisibility(newVisibility: Visibility): Closet {
+    return this.copy(visibility = newVisibility.name)
+}

@@ -8,12 +8,4 @@ data class Closet(
     val closetName: String = "My Closet",
     val visibility: String = Visibility.PRIVATE.name,
     val createdAt: Long = System.currentTimeMillis()
-){
-    @get:Exclude
-    val visibilityEnum: Visibility
-        get() = try{
-            Visibility.valueOf(visibility)
-        } catch (e: Exception){
-            Visibility.PRIVATE
-        }
-}
+)

@@ -10,17 +10,9 @@ data class Item(
     val itemImageUri: String = "",
     val createdAt: Long = System.currentTimeMillis(),
     val visibility: String = Visibility.PRIVATE.name,
-
-    val type: String = "",
-    val color: String = "",
-    val season: String = "",
+    val category: String = Category.TOPS.name,
+    val subCategory: String = "T-Shirt",
+    val season: String = Season.ALL_YEAR.name,
+    val color: String = Color.BLACK.name,
     val tags: List<String> = emptyList()
-){
-    @get:Exclude
-    val visibilityEnum: Visibility
-        get() = try{
-            Visibility.valueOf(visibility)
-        } catch (e: Exception){
-            Visibility.PRIVATE
-        }
-}
+)

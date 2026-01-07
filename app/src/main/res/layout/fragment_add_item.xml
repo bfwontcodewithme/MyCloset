@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Item"
+            android:textStyle="bold"
+            android:textSize="24sp"
+            android:textColor="#D81B60"
+            android:layout_marginBottom="12dp"/>
+
+        <ImageView
+            android:id="@+id/imgItem"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:background="#FCE4EC"
+            android:contentDescription="@string/item_image_desc" />
+
+        <Button
+            android:id="@+id/btnTakePhoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Take Photo (Camera)"
+            android:backgroundTint="#EC407A"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="10dp"/>
+
+        <Button
+            android:id="@+id/btnPickImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pick Image (Gallery)"
+            android:backgroundTint="#EC407A"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="10dp"/>
+
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Name (e.g., Pink sweater)"
+            android:layout_marginTop="12dp"/>
+
+        <EditText
+            android:id="@+id/etType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Type (shirt/pants/dress...)"
+            android:layout_marginTop="10dp"/>
+
+        <EditText
+            android:id="@+id/etColor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Color"
+            android:layout_marginTop="10dp"/>
+
+        <EditText
+            android:id="@+id/etSeason"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Season (summer/winter...)"
+            android:layout_marginTop="10dp"/>
+
+        <EditText
+            android:id="@+id/etTags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tags (comma separated: cute, work, date...)"
+            android:layout_marginTop="10dp"/>
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Item"
+            android:backgroundTint="#D81B60"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="16dp"/>
+
+        <ProgressBar
+            android:id="@+id/progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            android:layout_marginTop="14dp"/>
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,29 @@
+1. Folder Structure (The "Drawer" System)
+
+    data.model: For the "Blueprints" of your app.
+
+        ClosetAttributes.kt (Enums: Category, Season, Color, Visibility)
+
+        Item.kt, Outfit.kt, Closet.kt (The Data Classes)
+
+    util: For "General Tools" (Date formatters, Internet checkers).
+
+2. The "Bridge" Strategy
+
+    Enum -> Firebase: Use .name (e.g., Visibility.PUBLIC.name saves as "PUBLIC").
+
+    Firebase -> Enum: Use the String.toVisibility() extension function with try-catch.
+
+    Enum -> Screen: Use an override fun toString() inside the Enum to make it look pretty (e.g., "FRIENDS_ONLY" becomes "Friends Only").
+
+3. Selection Logic (Dependent Dropdowns)
+
+    User picks a Main Category (Tops).
+
+    App uses the Enum list to instantly filter and update the Sub-Category dropdown.
+
+    Always clear the sub-category (setText("")) if the main category is changed.
+
+
+// Optional: Makes the UI look nice ---- in enum class for visibility
+    override fun toString(): String = name.lowercase().replaceFirstChar { it.uppercase() }
