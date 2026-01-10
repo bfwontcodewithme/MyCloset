@@ -7,9 +7,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.mycloset.R
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : AppCompatActivity() {
+    private val auth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,16 +24,6 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        // 🔥 בדיקת חיבור ל-Firebase Firestore
-        val db = FirebaseFirestore.getInstance()
 
-        db.collection("test")
-            .get()
-            .addOnSuccessListener {
-                Log.d("FIREBASE_TEST", "Firestore connected successfully!")
-            }
-            .addOnFailureListener { e ->
-                Log.e("FIREBASE_TEST", "Firestore connection failed", e)
-            }
     }
 }
