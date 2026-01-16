@@ -38,7 +38,8 @@ class CreateOutfitFragment : Fragment(R.layout.fragment_create_outfit) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId == null) {
             Toast.makeText(requireContext(), "Please login first", Toast.LENGTH_SHORT).show()
-            findNavController().navigate(R.id.action_global_loginFragment)
+            findNavController().navigate(R.id.action_global_login)
+
             return
         }
 

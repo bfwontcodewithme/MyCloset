@@ -1,5 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- Brand (Modern Blue) -->
+    <color name="md_primary">#2563EB</color>
+    <color name="md_onPrimary">#FFFFFF</color>
+    <color name="md_primaryContainer">#DBEAFE</color>
+    <color name="md_onPrimaryContainer">#0B1B4A</color>
+
+    <!-- Accent -->
+    <color name="md_secondary">#14B8A6</color>
+    <color name="md_onSecondary">#FFFFFF</color>
+    <color name="md_secondaryContainer">#CCFBF1</color>
+    <color name="md_onSecondaryContainer">#003730</color>
+
+    <!-- Surfaces -->
+    <color name="md_surface">#FFFFFF</color>
+    <color name="md_onSurface">#0F172A</color>
+
+    <!-- Background (no purple tint) -->
+    <color name="md_surfaceVariant">#F8FAFC</color>
+    <color name="md_onSurfaceVariant">#64748B</color>
+
+    <color name="md_outline">#CBD5E1</color>
+    <color name="md_outlineVariant">#E2E8F0</color>
+
+    <!-- States -->
+    <color name="md_error">#DC2626</color>
+    <color name="md_onError">#FFFFFF</color>
+
+    <!-- Legacy -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
 </resources>

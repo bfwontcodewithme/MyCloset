@@ -8,7 +8,6 @@
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_menu_home"
             android:title="Home" />
-
     </group>
 
     <group android:id="@+id/group_logged_out">
@@ -24,6 +23,7 @@
             android:icon="@drawable/ic_menu_profile"
             android:title="My Profile" />
 
+        <!-- זה לא יעד ניווט אמיתי, נטפל בזה בקוד -->
         <item
             android:id="@+id/nav_logout"
             android:icon="@drawable/ic_menu_logout"

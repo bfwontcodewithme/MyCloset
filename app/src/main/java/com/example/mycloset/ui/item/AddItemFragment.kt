@@ -1,16 +1,18 @@
 package com.example.mycloset.ui.item
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.mycloset.R
-import com.example.mycloset.data.model.Item
 import com.example.mycloset.data.model.Item
 import com.example.mycloset.data.repository.ItemsRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -33,6 +35,16 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
             }
         }
 
+    // Camera permission
+    private val requestCameraPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                openCamera()
+            } else {
+                Toast.makeText(requireContext(), "Camera permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+
     // Camera
     private val takePictureLauncher =
         registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
@@ -40,7 +52,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                 selectedImageUri = cameraImageUri
                 view?.findViewById<ImageView>(R.id.imgItem)?.setImageURI(cameraImageUri)
             } else {
-                Toast.makeText(requireContext(), "taking picture canceled", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Taking picture canceled", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -50,14 +62,12 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId == null) {
             Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show()
-            findNavController().navigate(R.id.action_global_loginFragment)
+            findNavController().navigate(R.id.action_global_login)
             return
         }
 
-        val imgItem = view.findViewById<ImageView>(R.id.imgItem)
-
-        val btnCamera = view.findViewById<Button>(R.id.btnTakePhoto)      //   camera button
-        val btnGallery = view.findViewById<Button>(R.id.btnPickImage)     // gallary
+        val btnCamera = view.findViewById<Button>(R.id.btnTakePhoto)
+        val btnGallery = view.findViewById<Button>(R.id.btnPickImage)
         val btnSave = view.findViewById<Button>(R.id.btnSave)
         val progress = view.findViewById<ProgressBar>(R.id.progress)
 
@@ -67,18 +77,33 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         val etSeason = view.findViewById<EditText>(R.id.etSeason)
         val etTags = view.findViewById<EditText>(R.id.etTags)
 
-        // camera
+        // Camera
         btnCamera.setOnClickListener {
-            cameraImageUri = createImageUri()
-            takePictureLauncher.launch(cameraImageUri)
+            // אם אין בכלל מצלמה במכשיר
+            val hasCamera = requireContext().packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
+            if (!hasCamera) {
+                Toast.makeText(requireContext(), "No camera on this device", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val granted = ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (granted) {
+                openCamera()
+            } else {
+                requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
         }
 
-        // gallary
+        // Gallery
         btnGallery.setOnClickListener {
             pickImageLauncher.launch("image/*")
         }
 
-        // save
+        // Save
         btnSave.setOnClickListener {
             val name = etName.text.toString().trim()
             val type = etType.text.toString().trim()
@@ -96,14 +121,11 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
 
             lifecycleScope.launch {
                 try {
-                    progress.visibility = View.VISIBLE
-                    btnSave.isEnabled = false
-                    btnCamera.isEnabled = false
-                    btnGallery.isEnabled = false
+                    setLoading(true, progress, btnSave, btnCamera, btnGallery)
 
-                    //       if there is a picture -> storage, otherwise ""
+                    // If there is a picture -> upload to storage, otherwise ""
                     val imageUrl = selectedImageUri?.let { uri ->
-                        repo.uploadImage(userId, uri)   // Storage
+                        repo.uploadImage(userId, uri)
                     } ?: ""
 
                     val item = Item(
@@ -117,24 +139,40 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                         imageUrl = imageUrl
                     )
 
-                    repo.addItem(userId, item)         // Firestore
+                    repo.addItem(userId, item)
 
-                    Toast.makeText(requireContext(), "Item saved successfully ", Toast.LENGTH_SHORT).show()
-                    findNavController().popBackStack() // return to item list
+                    Toast.makeText(requireContext(), "Item saved successfully", Toast.LENGTH_SHORT).show()
+                    findNavController().popBackStack()
 
                 } catch (e: Exception) {
-                    Toast.makeText(requireContext(), "error: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 } finally {
-                    progress.visibility = View.GONE
-                    btnSave.isEnabled = true
-                    btnCamera.isEnabled = true
-                    btnGallery.isEnabled = true
+                    setLoading(false, progress, btnSave, btnCamera, btnGallery)
                 }
             }
         }
     }
 
+    private fun openCamera() {
+        cameraImageUri = createImageUri()
+        takePictureLauncher.launch(cameraImageUri)
+    }
+
+    private fun setLoading(
+        loading: Boolean,
+        progress: ProgressBar,
+        btnSave: Button,
+        btnCamera: Button,
+        btnGallery: Button
+    ) {
+        progress.visibility = if (loading) View.VISIBLE else View.GONE
+        btnSave.isEnabled = !loading
+        btnCamera.isEnabled = !loading
+        btnGallery.isEnabled = !loading
+    }
+
     private fun createImageUri(): Uri {
+        // חשוב: נשמור בתוך cache/images (מותאם ל-file_paths.xml המתוקן למטה)
         val imagesDir = File(requireContext().cacheDir, "images")
         imagesDir.mkdirs()
         val file = File(imagesDir, "camera_${System.currentTimeMillis()}.jpg")

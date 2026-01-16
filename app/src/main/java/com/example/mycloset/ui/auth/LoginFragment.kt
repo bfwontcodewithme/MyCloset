@@ -1,52 +1,216 @@
 package com.example.mycloset.ui.auth
 
-
+import android.app.AlertDialog
 import android.os.Bundle
-import android.util.Log
+import android.util.Patterns
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.google.firebase.auth.FirebaseAuth
 import com.example.mycloset.R
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 
-class LoginFragment : Fragment() {
-    private val auth: FirebaseAuth by lazy{ FirebaseAuth.getInstance() }
+class LoginFragment : Fragment(R.layout.fragment_login) {
+
+    private val auth by lazy { FirebaseAuth.getInstance() }
+    private val db by lazy { FirebaseFirestore.getInstance() }
+
+    private lateinit var tilEmail: TextInputLayout
+    private lateinit var tilPassword: TextInputLayout
+    private lateinit var etEmail: TextInputEditText
+    private lateinit var etPassword: TextInputEditText
+    private lateinit var btnLogin: MaterialButton
+    private lateinit var btnGoogle: MaterialButton
+    private lateinit var tvGoRegister: TextView
+    private lateinit var tvForgotPassword: TextView
+    private lateinit var progress: ProgressBar
+
+    private val googleLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            runCatching {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                val account = task.result
+
+                val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+
+                setLoading(true)
+                auth.signInWithCredential(credential)
+                    .addOnSuccessListener {
+                        val user = auth.currentUser ?: run { setLoading(false); return@addOnSuccessListener }
+                        ensureUserDocExists(uid = user.uid, email = user.email ?: "")
+                    }
+                    .addOnFailureListener { e ->
+                        setLoading(false)
+                        toast("Google sign-in failed: ${e.message}")
+                    }
+
+            }.onFailure {
+                setLoading(false)
+                toast("Google sign-in canceled/failed")
+            }
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val etEmail = view.findViewById<EditText>(R.id.etEmail)
-        val etPassword = view.findViewById<EditText>(R.id.etPassword)
-        val btnLogin = view.findViewById<Button>(R.id.btnLogin)
-        val tvGoRegister = view.findViewById<TextView>(R.id.tvGoRegister)
+        // ✅ חשוב: ה-IDs פה חייבים להיות קיימים ב-fragment_login.xml
+        tilEmail = view.findViewById(R.id.tilEmail)
+        tilPassword = view.findViewById(R.id.tilPassword)
+        etEmail = view.findViewById(R.id.etEmail)
+        etPassword = view.findViewById(R.id.etPassword)
+        btnLogin = view.findViewById(R.id.btnLogin)
+        btnGoogle = view.findViewById(R.id.btnGoogle)
+        tvGoRegister = view.findViewById(R.id.tvGoRegister)
+        tvForgotPassword = view.findViewById(R.id.tvForgotPassword)
+        progress = view.findViewById(R.id.progressLogin)
 
         tvGoRegister.setOnClickListener {
             findNavController().navigate(R.id.action_nav_login_to_nav_register)
         }
 
-        btnLogin.setOnClickListener {
-            val email = etEmail.text.toString().trim()
-            val pass = etPassword.text.toString().trim()
+        tvForgotPassword.setOnClickListener { showResetPasswordDialog() }
 
-            if(email.isEmpty() || pass.isEmpty()){
-                Toast.makeText(requireContext(), "Enter email and password", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-             auth.signInWithEmailAndPassword(email,pass)
-                 .addOnSuccessListener {
-                 val uid = auth.currentUser?.uid
-                 Log.d("AUTH_TEST", "Login OK uid=$uid")
-                 findNavController().navigate(R.id.action_nav_login_to_nav_home)
-                }
-                 .addOnFailureListener { e ->
-                     Log.e("AUTH_TEST", "Login Failed", e)
-                     Toast.makeText(requireContext(), "Login failed: ${e.message}", Toast.LENGTH_LONG).show()
-                 }
+        btnLogin.setOnClickListener { doEmailPasswordLogin() }
+
+        btnGoogle.setOnClickListener { doGoogleLogin() }
+    }
+
+    private fun doEmailPasswordLogin() {
+        clearErrors()
+
+        val email = etEmail.text?.toString()?.trim().orEmpty()
+        val pass = etPassword.text?.toString()?.trim().orEmpty()
+
+        var ok = true
+        if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            tilEmail.error = "Please enter a valid email"
+            ok = false
         }
+        if (pass.length < 6) {
+            tilPassword.error = "Password must be at least 6 characters"
+            ok = false
+        }
+        if (!ok) return
 
+        setLoading(true)
+        auth.signInWithEmailAndPassword(email, pass)
+            .addOnSuccessListener {
+                val user = auth.currentUser ?: run { setLoading(false); return@addOnSuccessListener }
+                // ✅ אם המשתמש התחבר באימייל אבל אין לו doc עדיין -> ניצור
+                ensureUserDocExists(uid = user.uid, email = user.email ?: email)
+            }
+            .addOnFailureListener { e ->
+                setLoading(false)
+                toast("Login failed: ${e.message}")
+            }
+    }
+
+    private fun doGoogleLogin() {
+        // ✅ זה חייב להגיע מה-google-services.json (נוצר אוטומטית ל-strings.xml)
+        val webClientId = getString(R.string.default_web_client_id)
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(webClientId)
+            .requestEmail()
+            .build()
+
+        val client = GoogleSignIn.getClient(requireActivity(), gso)
+        googleLauncher.launch(client.signInIntent)
+    }
+
+    private fun showResetPasswordDialog() {
+        val input = android.widget.EditText(requireContext()).apply { hint = "Email" }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Reset password")
+            .setMessage("Enter your email and we'll send a reset link.")
+            .setView(input)
+            .setPositiveButton("Send") { _, _ ->
+                val email = input.text.toString().trim()
+                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    toast("Enter a valid email")
+                    return@setPositiveButton
+                }
+
+                setLoading(true)
+                auth.sendPasswordResetEmail(email)
+                    .addOnSuccessListener { setLoading(false); toast("Reset email sent") }
+                    .addOnFailureListener { e -> setLoading(false); toast("Failed: ${e.message}") }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun ensureUserDocExists(uid: String, email: String) {
+        val ref = db.collection("users").document(uid)
+
+        ref.get()
+            .addOnSuccessListener { snap ->
+                if (snap.exists()) {
+                    routeByRole(uid)
+                } else {
+                    // ✅ ברירת מחדל: REGULAR (לפי דרישות)
+                    val data = hashMapOf(
+                        "email" to email,
+                        "role" to "REGULAR",
+                        "createdAt" to FieldValue.serverTimestamp()
+                    )
+                    ref.set(data)
+                        .addOnSuccessListener { routeByRole(uid) }
+                        .addOnFailureListener { e -> setLoading(false); toast("Failed saving user: ${e.message}") }
+                }
+            }
+            .addOnFailureListener { e ->
+                setLoading(false)
+                toast("Failed reading user: ${e.message}")
+            }
+    }
+
+    private fun routeByRole(uid: String) {
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { snap ->
+                setLoading(false)
+
+                val role = (snap.getString("role") ?: "REGULAR").uppercase()
+
+                // כרגע אין לך מסכים שונים, אז כולם הולכים ל-Home כדי לא לשבור
+                // בעתיד:
+                // if (role == "STYLIST") navigateToStylistHome() else navigateToRegularHome()
+
+                findNavController().navigate(R.id.action_nav_login_to_nav_home)
+            }
+            .addOnFailureListener { e ->
+                setLoading(false)
+                toast("Failed reading role: ${e.message}")
+                findNavController().navigate(R.id.action_nav_login_to_nav_home)
+            }
+    }
+
+    private fun setLoading(loading: Boolean) {
+        progress.visibility = if (loading) View.VISIBLE else View.GONE
+        btnLogin.isEnabled = !loading
+        btnGoogle.isEnabled = !loading
+        tvGoRegister.isEnabled = !loading
+        tvForgotPassword.isEnabled = !loading
+    }
+
+    private fun clearErrors() {
+        tilEmail.error = null
+        tilPassword.error = null
+    }
+
+    private fun toast(msg: String) {
+        Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
     }
 }
