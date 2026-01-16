@@ -22,19 +22,20 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         val user = FirebaseAuth.getInstance().currentUser
         tvUserEmail.text = "Email: ${user?.email ?: "Unknown"}"
 
+        // ❌ אין Settings Fragment מחובר ל-navigation כרגע
         btnGoSettings.setOnClickListener {
-            findNavController().navigate(R.id.action_homeFragment_to_settingsFragment) // אם לא נוח, אפשר ישירות R.id.settingsFragment
-            // אופציה בטוחה יותר:
-            // findNavController().navigate(R.id.settingsFragment)
+            // TODO: לחבר Settings ל-navigation בעתיד
         }
 
+        // ❌ אין Suggestions Inbox Fragment מחובר ל-navigation כרגע
         btnGoSuggestions.setOnClickListener {
-            findNavController().navigate(R.id.suggestionsInboxFragment)
+            // TODO: לחבר Suggestions ל-navigation בעתיד
         }
 
         btnLogout.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
-            findNavController().navigate(R.id.action_global_loginFragment)
+            // ✅ זה ה-ID היחיד שקיים אצלך
+            findNavController().navigate(R.id.action_global_login)
         }
     }
 }

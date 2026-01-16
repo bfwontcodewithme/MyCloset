@@ -16,44 +16,30 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
-class ItemsListFragment : Fragment(R.layout.fragment_items_list) {
+class ItemListFragment : Fragment(R.layout.fragment_items_list) {
 
     private val repo = ItemsRepository()
 
-    private val adapter = ItemsAdapter { item ->
-        Toast.makeText(requireContext(), "Clicked: ${item.name}", Toast.LENGTH_SHORT).show()
-        // אפשר בהמשך: ניווט ל-ItemDetails
+    private val adapter = ItemAdapter(mutableListOf()) { item ->
+        Toast.makeText(requireContext(), item.name, Toast.LENGTH_SHORT).show()
     }
-
-    private lateinit var rv: RecyclerView
-    private lateinit var progress: ProgressBar
-    private lateinit var tvEmpty: TextView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        rv = view.findViewById(R.id.rvItems)
-        progress = view.findViewById(R.id.progressItems)
-        tvEmpty = view.findViewById(R.id.tvEmpty)
+        val rv = view.findViewById<RecyclerView>(R.id.rvItems)
+        val progress = view.findViewById<ProgressBar>(R.id.progressItems)
+        val tvEmpty = view.findViewById<TextView>(R.id.tvEmpty)
+        val fab = view.findViewById<FloatingActionButton>(R.id.fabAddItem)
 
         rv.layoutManager = LinearLayoutManager(requireContext())
         rv.adapter = adapter
 
-        val fab = view.findViewById<FloatingActionButton>(R.id.fabAddItem)
         fab.setOnClickListener {
-            findNavController().navigate(R.id.action_itemsListFragment_to_addItemFragment)
+            // ✅ לפי navigation שלך
+            findNavController().navigate(R.id.nav_add_item)
         }
 
-        loadItems()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // ✅ אם חזרת מ-AddItem, זה ירענן ויראה את הפריט החדש
-        loadItems()
-    }
-
-    private fun loadItems() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId == null) {
             tvEmpty.visibility = View.VISIBLE
@@ -65,10 +51,10 @@ class ItemsListFragment : Fragment(R.layout.fragment_items_list) {
             try {
                 progress.visibility = View.VISIBLE
                 val items = repo.getMyItems(userId)
-                adapter.submitList(items)
+                adapter.setData(items)
                 tvEmpty.visibility = if (items.isEmpty()) View.VISIBLE else View.GONE
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), e.message, Toast.LENGTH_LONG).show()
             } finally {
                 progress.visibility = View.GONE
             }

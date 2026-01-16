@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ===== TEXT STYLES ===== -->
+    <style name="MyCloset.Title" parent="TextAppearance.Material3.TitleLarge">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="MyCloset.Caption" parent="TextAppearance.Material3.BodySmall">
+        <item name="android:textColor">@color/md_onSurfaceVariant</item>
+    </style>
+
+    <!-- ===== CARD ===== -->
+    <style name="MyCloset.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="shapeAppearanceOverlay">@style/MyCloset.Shape.Rounded.L</item>
+    </style>
+
+    <style name="MyCloset.Shape.Rounded.L" parent="ShapeAppearance.Material3.Corner.ExtraLarge">
+        <item name="cornerSize">@dimen/radius_l</item>
+    </style>
+
+    <!-- ===== BUTTON ===== -->
+    <style name="MyCloset.Button" parent="Widget.Material3.Button">
+        <item name="cornerRadius">@dimen/radius_m</item>
+        <item name="android:minHeight">52dp</item>
+    </style>
+
+    <!-- ===== TEXT FIELD ===== -->
+    <style name="MyCloset.TextField" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/radius_m</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/radius_m</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/radius_m</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/radius_m</item>
+
+        <item name="boxStrokeColor">@color/md_outline</item>
+        <item name="hintTextColor">@color/md_onSurfaceVariant</item>
+    </style>
+    <style name="MyCloset.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">@dimen/radius_m</item>
+        <item name="android:minHeight">52dp</item>
+    </style>
+
+
+</resources>

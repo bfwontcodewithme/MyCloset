@@ -1,44 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@id/nav_home">
+    app:startDestination="@id/nav_login">
+
+    <!-- Global actions (אפשר לנווט אליהם מכל מקום) -->
     <action
-        android:id="@+id/action_global_loginFragment"
-        app:destination="@id/nav_login" />
+        android:id="@+id/action_global_login"
+        app:destination="@id/nav_login"
+        app:popUpTo="@id/mobile_navigation"
+        app:popUpToInclusive="true" />
 
-    <fragment
-        android:id="@+id/nav_home"
-        android:name="com.example.mycloset.ui.home.HomeFragment"
-        android:label="Home"
-        tools:layout="@layout/fragment_home" />
+    <action
+        android:id="@+id/action_global_home"
+        app:destination="@id/nav_home"
+        app:popUpTo="@id/mobile_navigation"
+        app:popUpToInclusive="true" />
 
+    <!-- Login -->
     <fragment
         android:id="@+id/nav_login"
         android:name="com.example.mycloset.ui.auth.LoginFragment"
-        android:label="Sign In"
-        tools:layout="@layout/fragment_login">
+        android:label="Sign In">
 
         <action
             android:id="@+id/action_nav_login_to_nav_register"
-            app:destination="@+id/nav_register" />
+            app:destination="@id/nav_register" />
+
         <action
             android:id="@+id/action_nav_login_to_nav_home"
-            app:destination="@+id/nav_home" />
+            app:destination="@id/nav_home"
+            app:popUpTo="@id/nav_login"
+            app:popUpToInclusive="true" />
     </fragment>
 
+    <!-- Register -->
     <fragment
         android:id="@+id/nav_register"
         android:name="com.example.mycloset.ui.auth.RegisterFragment"
-        android:label="Register"
-        tools:layout="@layout/fragment_register">
+        android:label="Register">
 
         <action
             android:id="@+id/action_nav_register_to_nav_home"
             app:destination="@id/nav_home"
-            app:popUpTo="@id/nav_home"
+            app:popUpTo="@id/nav_login"
             app:popUpToInclusive="true" />
     </fragment>
+
+    <!-- Home -->
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.mycloset.ui.home.HomeFragment"
+        android:label="Home">
+
+        <action
+            android:id="@+id/action_nav_home_to_nav_closet"
+            app:destination="@id/nav_closet" />
+
+        <action
+            android:id="@+id/action_nav_home_to_nav_profile"
+            app:destination="@id/nav_profile" />
+    </fragment>
+
+    <!-- Profile (חשוב בגלל שיש לך בתפריט nav_profile) -->
+    <fragment
+        android:id="@+id/nav_profile"
+        android:name="com.example.mycloset.ui.profile.ProfileFragment"
+        android:label="My Profile" />
+
+    <!-- Closet -->
+    <fragment
+        android:id="@+id/nav_closet"
+        android:name="com.example.mycloset.ui.closet.ClosetFragment"
+        android:label="Closet">
+
+        <action
+            android:id="@+id/action_nav_closet_to_nav_add_item"
+            app:destination="@id/nav_add_item" />
+
+        <action
+            android:id="@+id/action_nav_closet_to_nav_create_outfit"
+            app:destination="@id/nav_create_outfit" />
+    </fragment>
+
+    <!-- Add Item -->
+    <fragment
+        android:id="@+id/nav_add_item"
+        android:name="com.example.mycloset.ui.item.AddItemFragment"
+        android:label="Add Item" />
+
+    <!-- Create Outfit -->
+    <fragment
+        android:id="@+id/nav_create_outfit"
+        android:name="com.example.mycloset.ui.outfit.CreateOutfitFragment"
+        android:label="Create Outfit" />
 
 </navigation>

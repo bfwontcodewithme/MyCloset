@@ -19,7 +19,7 @@ class PickItemsAdapter(
     companion object {
         private val DIFF = object : DiffUtil.ItemCallback<Item>() {
             override fun areItemsTheSame(oldItem: Item, newItem: Item): Boolean =
-                oldItem.itemId == newItem.itemId
+                oldItem.id == newItem.id
 
             override fun areContentsTheSame(oldItem: Item, newItem: Item): Boolean =
                 oldItem == newItem
@@ -47,14 +47,12 @@ class PickItemsAdapter(
 
     inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        private val tvPickItem: TextView =
-            itemView.findViewById(R.id.tvPickItem)
+        private val tvPickItem: TextView = itemView.findViewById(R.id.tvPickItem)
 
         fun bind(item: Item) {
-            val isSelected = selectedIds.contains(item.itemId)
+            val isSelected = selectedIds.contains(item.id)
 
-            tvPickItem.text =
-                "${item.name} (${item.type}, ${item.color}, ${item.season})"
+            tvPickItem.text = "${item.name} (${item.type}, ${item.color}, ${item.season})"
 
             itemView.alpha = if (isSelected) 0.6f else 1.0f
             itemView.setBackgroundResource(
@@ -63,16 +61,11 @@ class PickItemsAdapter(
             )
 
             itemView.setOnClickListener {
-                if (selectedIds.contains(item.itemId)) {
-                    selectedIds.remove(item.itemId)
-                } else {
-                    selectedIds.add(item.itemId)
-                }
+                if (selectedIds.contains(item.id)) selectedIds.remove(item.id)
+                else selectedIds.add(item.id)
 
                 val pos = adapterPosition
-                if (pos != RecyclerView.NO_POSITION) {
-                    notifyItemChanged(pos)
-                }
+                if (pos != RecyclerView.NO_POSITION) notifyItemChanged(pos)
 
                 onSelectionChanged?.invoke()
             }

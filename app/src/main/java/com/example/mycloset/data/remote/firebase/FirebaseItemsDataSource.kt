@@ -24,9 +24,10 @@ class FirebaseItemsDataSource(
             .collection("items")
             .document()
 
-        val itemWithId = item.copy(itemId = doc.id)
+        val itemWithId = item.copy(id = doc.id)
         doc.set(itemWithId).await()
         return doc.id
+
     }
 
 

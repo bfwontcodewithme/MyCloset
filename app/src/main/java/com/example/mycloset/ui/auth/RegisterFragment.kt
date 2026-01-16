@@ -1,52 +1,132 @@
 package com.example.mycloset.ui.auth
 
 import android.os.Bundle
-import android.util.Log
+import android.util.Patterns
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
+import android.widget.ProgressBar
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.mycloset.R
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 
 class RegisterFragment : Fragment(R.layout.fragment_register) {
 
-    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+    private val auth by lazy { FirebaseAuth.getInstance() }
+    private val db by lazy { FirebaseFirestore.getInstance() }
+
+    private lateinit var tilEmail: TextInputLayout
+    private lateinit var tilPassword: TextInputLayout
+    private lateinit var tilConfirm: TextInputLayout
+    private lateinit var etEmail: TextInputEditText
+    private lateinit var etPassword: TextInputEditText
+    private lateinit var etConfirm: TextInputEditText
+    private lateinit var rgRole: RadioGroup
+    private lateinit var rbUser: RadioButton
+    private lateinit var rbStylist: RadioButton
+    private lateinit var btnRegister: MaterialButton
+    private lateinit var tvGoLogin: TextView
+    private lateinit var progress: ProgressBar
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val etEmail = view.findViewById<EditText>(R.id.etEmail)
-        val etPassword = view.findViewById<EditText>(R.id.etPassword)
-        val btnRegister = view.findViewById<Button>(R.id.btnRegister)
-        val tvGoLogin = view.findViewById<TextView>(R.id.tvGoLogin)
+        tilEmail = view.findViewById(R.id.tilEmail)
+        tilPassword = view.findViewById(R.id.tilPassword)
+        tilConfirm = view.findViewById(R.id.tilConfirmPassword)
 
-        tvGoLogin.setOnClickListener {
-            findNavController().navigateUp()
+        etEmail = view.findViewById(R.id.etEmail)
+        etPassword = view.findViewById(R.id.etPassword)
+        etConfirm = view.findViewById(R.id.etConfirmPassword)
+
+        rgRole = view.findViewById(R.id.rgRole)
+        rbUser = view.findViewById(R.id.rbUser)
+        rbStylist = view.findViewById(R.id.rbStylist)
+
+        btnRegister = view.findViewById(R.id.btnRegister)
+        tvGoLogin = view.findViewById(R.id.tvGoLogin)
+        progress = view.findViewById(R.id.progressRegister)
+
+        tvGoLogin.setOnClickListener { findNavController().navigateUp() }
+        btnRegister.setOnClickListener { doRegister() }
+    }
+
+    private fun doRegister() {
+        clearErrors()
+
+        val email = etEmail.text?.toString()?.trim().orEmpty()
+        val pass = etPassword.text?.toString()?.trim().orEmpty()
+        val confirm = etConfirm.text?.toString()?.trim().orEmpty()
+
+        var ok = true
+        if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            tilEmail.error = "Please enter a valid email"
+            ok = false
         }
+        if (pass.length < 6) {
+            tilPassword.error = "Password must be at least 6 characters"
+            ok = false
+        }
+        if (confirm != pass) {
+            tilConfirm.error = "Passwords do not match"
+            ok = false
+        }
+        if (!ok) return
 
-        btnRegister.setOnClickListener {
-            val email = etEmail.text.toString().trim()
-            val pass = etPassword.text.toString().trim()
+        val role = if (rbStylist.isChecked) "stylist" else "user"
 
-            if (email.isEmpty() || pass.isEmpty()) {
-                Toast.makeText(requireContext(), "Enter email + password", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+        setLoading(true)
+        auth.createUserWithEmailAndPassword(email, pass)
+            .addOnSuccessListener {
+                val uid = auth.currentUser?.uid ?: run {
+                    setLoading(false); return@addOnSuccessListener
+                }
+
+                val userDoc = hashMapOf(
+                    "email" to email,
+                    "role" to role,
+                    "createdAt" to FieldValue.serverTimestamp(),
+                    "profileImageUrl" to null
+                )
+
+                db.collection("users").document(uid).set(userDoc)
+                    .addOnSuccessListener {
+                        setLoading(false)
+                        // To avoid crashes if stylist destination not added yet, go home for now
+                        findNavController().navigate(R.id.action_nav_register_to_nav_home)
+                    }
+                    .addOnFailureListener { e ->
+                        setLoading(false)
+                        toast("Saved auth but failed Firestore: ${e.message}")
+                    }
             }
+            .addOnFailureListener { e ->
+                setLoading(false)
+                toast("Register failed: ${e.message}")
+            }
+    }
 
-            auth.createUserWithEmailAndPassword(email, pass)
-                .addOnSuccessListener {
-                    val uid = auth.currentUser?.uid
-                    Log.d("AUTH_TEST", "Register OK uid=$uid")
-                    findNavController().navigate(R.id.action_nav_register_to_nav_home)
-                }
-                .addOnFailureListener { e ->
-                    Log.e("AUTH_TEST", "Register FAILED", e)
-                    Toast.makeText(requireContext(), "Register failed: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-        }
+    private fun setLoading(loading: Boolean) {
+        progress.visibility = if (loading) View.VISIBLE else View.GONE
+        btnRegister.isEnabled = !loading
+        tvGoLogin.isEnabled = !loading
+    }
+
+    private fun clearErrors() {
+        tilEmail.error = null
+        tilPassword.error = null
+        tilConfirm.error = null
+    }
+
+    private fun toast(msg: String) {
+        Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
     }
 }
