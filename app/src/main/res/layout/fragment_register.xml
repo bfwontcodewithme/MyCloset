@@ -27,7 +27,7 @@
                 android:padding="@dimen/space_l">
 
                 <TextView
-                    android:id="@+id/tvTitle"
+                    android:id="@+id/tvRegisterTitle"
                     style="@style/MyCloset.Title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

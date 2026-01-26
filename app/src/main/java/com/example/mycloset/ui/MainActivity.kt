@@ -68,7 +68,7 @@ class MainActivity : AppCompatActivity() {
         updateDrawerMenuVisibility()
     }
 
-    private fun updateDrawerMenuVisibility() {
+    public fun updateDrawerMenuVisibility() {
         val loggedIn = auth.currentUser != null
         val menu = navView.menu
         menu.setGroupVisible(R.id.group_logged_in, loggedIn)
