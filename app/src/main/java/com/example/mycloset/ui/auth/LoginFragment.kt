@@ -1,5 +1,6 @@
 package com.example.mycloset.ui.auth
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.os.Bundle
 import android.util.Patterns
@@ -13,6 +14,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.mycloset.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -38,33 +40,53 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
     private val googleLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            runCatching {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                val account = task.result
 
-                val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+            // המשתמש ביטל בחירת חשבון
+            if (result.resultCode != Activity.RESULT_OK) {
+                toast("Google sign-in canceled")
+                return@registerForActivityResult
+            }
+
+            try {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                val account = task.getResult(ApiException::class.java)
+
+                val idToken = account.idToken
+                if (idToken.isNullOrBlank()) {
+                    toast("Google sign-in failed: idToken is null (check SHA-1 + google-services.json)")
+                    return@registerForActivityResult
+                }
+
+                val credential = GoogleAuthProvider.getCredential(idToken, null)
 
                 setLoading(true)
                 auth.signInWithCredential(credential)
                     .addOnSuccessListener {
-                        val user = auth.currentUser ?: run { setLoading(false); return@addOnSuccessListener }
+                        val user = auth.currentUser ?: run {
+                            setLoading(false)
+                            toast("Google sign-in failed: user is null")
+                            return@addOnSuccessListener
+                        }
                         ensureUserDocExists(uid = user.uid, email = user.email ?: "")
                     }
                     .addOnFailureListener { e ->
                         setLoading(false)
-                        toast("Google sign-in failed: ${e.message}")
+                        toast("Firebase auth failed: ${e.message}")
                     }
 
-            }.onFailure {
-                setLoading(false)
-                toast("Google sign-in canceled/failed")
+            } catch (e: ApiException) {
+                // פה את מקבלת קוד מדויק כמו 10 / 12500
+                // 10 = DEVELOPER_ERROR (SHA-1 / client mismatch)
+                // 12500 = config/play-services issue
+                toast("Google sign-in failed (ApiException ${e.statusCode}): ${e.message}")
+            } catch (e: Exception) {
+                toast("Google sign-in failed: ${e.javaClass.simpleName}: ${e.message}")
             }
         }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // ✅ חשוב: ה-IDs פה חייבים להיות קיימים ב-fragment_login.xml
         tilEmail = view.findViewById(R.id.tilEmail)
         tilPassword = view.findViewById(R.id.tilPassword)
         etEmail = view.findViewById(R.id.etEmail)
@@ -80,9 +102,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         }
 
         tvForgotPassword.setOnClickListener { showResetPasswordDialog() }
-
         btnLogin.setOnClickListener { doEmailPasswordLogin() }
-
         btnGoogle.setOnClickListener { doGoogleLogin() }
     }
 
@@ -107,7 +127,6 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         auth.signInWithEmailAndPassword(email, pass)
             .addOnSuccessListener {
                 val user = auth.currentUser ?: run { setLoading(false); return@addOnSuccessListener }
-                // ✅ אם המשתמש התחבר באימייל אבל אין לו doc עדיין -> ניצור
                 ensureUserDocExists(uid = user.uid, email = user.email ?: email)
             }
             .addOnFailureListener { e ->
@@ -117,8 +136,12 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     }
 
     private fun doGoogleLogin() {
-        // ✅ זה חייב להגיע מה-google-services.json (נוצר אוטומטית ל-strings.xml)
         val webClientId = getString(R.string.default_web_client_id)
+
+        if (webClientId.isBlank() || webClientId == "YOUR_WEB_CLIENT_ID") {
+            toast("default_web_client_id missing. Check google-services.json location + Sync.")
+            return
+        }
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(webClientId)
@@ -126,7 +149,11 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             .build()
 
         val client = GoogleSignIn.getClient(requireActivity(), gso)
-        googleLauncher.launch(client.signInIntent)
+
+        // מומלץ כדי לא “להיתקע” עם חשבון ישן
+        client.signOut().addOnCompleteListener {
+            googleLauncher.launch(client.signInIntent)
+        }
     }
 
     private fun showResetPasswordDialog() {
@@ -160,7 +187,6 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 if (snap.exists()) {
                     routeByRole(uid)
                 } else {
-                    // ✅ ברירת מחדל: REGULAR (לפי דרישות)
                     val data = hashMapOf(
                         "email" to email,
                         "role" to "REGULAR",
@@ -179,15 +205,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
     private fun routeByRole(uid: String) {
         db.collection("users").document(uid).get()
-            .addOnSuccessListener { snap ->
+            .addOnSuccessListener {
                 setLoading(false)
-
-                val role = (snap.getString("role") ?: "REGULAR").uppercase()
-
-                // כרגע אין לך מסכים שונים, אז כולם הולכים ל-Home כדי לא לשבור
-                // בעתיד:
-                // if (role == "STYLIST") navigateToStylistHome() else navigateToRegularHome()
-
                 findNavController().navigate(R.id.action_nav_login_to_nav_home)
             }
             .addOnFailureListener { e ->

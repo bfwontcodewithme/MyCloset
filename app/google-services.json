@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "447814663048-0qus48pkbvc7v9e2pnogmck9l3pk481r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.mycloset",
+            "certificate_hash": "765e0a28a5bcf7dcd8a962c107c769feab608eb7"
+          }
+        },
+        {
           "client_id": "447814663048-emtsutsrdvv6e1tpt13n3ut1ii4e4587.apps.googleusercontent.com",
           "client_type": 3
         }
