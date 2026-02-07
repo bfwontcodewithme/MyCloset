@@ -68,16 +68,34 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp"/>
 
+
+
+
+
+    <Button
+        android:id="@+id/btnRequestStylist"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Request Stylist"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#7B1FA2"
+        app:layout_constraintTop_toBottomOf="@id/btnMyItems"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
+
+
     <Button
         android:id="@+id/btnLogout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="88dp"
+        android:backgroundTint="#FFFFFF"
         android:text="Logout"
         android:textColor="#D81B60"
-        android:backgroundTint="#FFFFFF"
-        app:layout_constraintTop_toBottomOf="@id/btnMyItems"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="18dp"/>
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnMyItems" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -189,7 +189,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 } else {
                     val data = hashMapOf(
                         "email" to email,
-                        "role" to "REGULAR",
+                        "role" to "USER",
                         "createdAt" to FieldValue.serverTimestamp()
                     )
                     ref.set(data)
@@ -205,16 +205,26 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
     private fun routeByRole(uid: String) {
         db.collection("users").document(uid).get()
-            .addOnSuccessListener {
+            .addOnSuccessListener { snap ->
                 setLoading(false)
-                findNavController().navigate(R.id.action_nav_login_to_nav_home)
+
+                val role = snap.getString("role") ?: "REGULAR"
+
+                if (role.uppercase() == "STYLIST") {
+                    findNavController().navigate(R.id.action_global_stylist_home)
+                } else {
+                    findNavController().navigate(R.id.action_global_home)
+                }
             }
             .addOnFailureListener { e ->
                 setLoading(false)
                 toast("Failed reading role: ${e.message}")
-                findNavController().navigate(R.id.action_nav_login_to_nav_home)
+                findNavController().navigate(R.id.action_global_home)
             }
     }
+
+
+
 
     private fun setLoading(loading: Boolean) {
         progress.visibility = if (loading) View.VISIBLE else View.GONE
@@ -232,4 +242,5 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private fun toast(msg: String) {
         Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
     }
+
 }

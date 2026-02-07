@@ -4,7 +4,7 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@id/nav_login">
 
-    <!-- Global actions (אפשר לנווט אליהם מכל מקום) -->
+    <!--  Global actions (מכל מקום) -->
     <action
         android:id="@+id/action_global_login"
         app:destination="@id/nav_login"
@@ -17,6 +17,19 @@
         app:popUpTo="@id/mobile_navigation"
         app:popUpToInclusive="true" />
 
+    <action
+        android:id="@+id/action_global_stylist_home"
+        app:destination="@id/nav_stylist_home"
+        app:popUpTo="@id/mobile_navigation"
+        app:popUpToInclusive="true" />
+
+    <!-- ✅ NEW: Stylist list (user chooses stylist) -->
+    <action
+        android:id="@+id/action_global_stylist_list"
+        app:destination="@id/nav_stylist_list"
+        app:popUpTo="@id/mobile_navigation"
+        app:popUpToInclusive="false" />
+
     <!-- Login -->
     <fragment
         android:id="@+id/nav_login"
@@ -27,9 +40,17 @@
             android:id="@+id/action_nav_login_to_nav_register"
             app:destination="@id/nav_register" />
 
+        <!-- Regular user -->
         <action
             android:id="@+id/action_nav_login_to_nav_home"
             app:destination="@id/nav_home"
+            app:popUpTo="@id/nav_login"
+            app:popUpToInclusive="true" />
+
+        <!-- Stylist -->
+        <action
+            android:id="@+id/action_nav_login_to_nav_stylist_home"
+            app:destination="@id/nav_stylist_home"
             app:popUpTo="@id/nav_login"
             app:popUpToInclusive="true" />
     </fragment>
@@ -40,17 +61,25 @@
         android:name="com.example.mycloset.ui.auth.RegisterFragment"
         android:label="Register">
 
+        <!-- Regular user -->
         <action
             android:id="@+id/action_nav_register_to_nav_home"
             app:destination="@id/nav_home"
             app:popUpTo="@id/nav_login"
             app:popUpToInclusive="true" />
+
+        <!-- Stylist  -->
+        <action
+            android:id="@+id/action_nav_register_to_nav_stylist_home"
+            app:destination="@id/nav_stylist_home"
+            app:popUpTo="@id/nav_login"
+            app:popUpToInclusive="true" />
     </fragment>
 
-    <!-- Home -->
+    <!-- Home (Regular User Home) -->
     <fragment
         android:id="@+id/nav_home"
-        android:name="com.example.mycloset.ui.main.HomeFragment"
+        android:name="com.example.mycloset.ui.home.HomeFragment"
         android:label="Home">
 
         <action
@@ -60,6 +89,7 @@
         <action
             android:id="@+id/action_nav_home_to_nav_profile"
             app:destination="@id/nav_profile" />
+
         <action
             android:id="@+id/action_nav_home_to_nav_add_item"
             app:destination="@id/nav_add_item" />
@@ -68,10 +98,25 @@
             android:id="@+id/action_nav_home_to_nav_create_outfit"
             app:destination="@id/nav_create_outfit" />
 
+        <!-- ✅ NEW: go to choose stylist list -->
+        <action
+            android:id="@+id/action_nav_home_to_nav_stylist_list"
+            app:destination="@id/nav_stylist_list" />
     </fragment>
 
+    <!-- ✅ NEW: Stylist List -->
+    <fragment
+        android:id="@+id/nav_stylist_list"
+        android:name="com.example.mycloset.ui.stylist.StylistListFragment"
+        android:label="Choose Stylist" />
 
-    <!-- Profile (חשוב בגלל שיש לך בתפריט nav_profile) -->
+    <!-- Stylist Home -->
+    <fragment
+        android:id="@+id/nav_stylist_home"
+        android:name="com.example.mycloset.ui.stylist.StylistHomeFragment"
+        android:label="Stylist Home" />
+
+    <!-- Profile -->
     <fragment
         android:id="@+id/nav_profile"
         android:name="com.example.mycloset.ui.profile.ProfileFragment"
@@ -80,7 +125,7 @@
     <fragment
         android:id="@+id/nav_settings"
         android:name="com.example.mycloset.ui.main.SettingsFragment"
-        android:label="My Profile" />
+        android:label="Settings" />
 
     <!-- Closet -->
     <fragment

@@ -95,6 +95,11 @@ dependencies {
 
     // debug
     debugImplementation ("androidx.fragment:fragment-testing:1.6.2")
+    // Location (GPS)
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+    implementation("com.firebase:geofire-android-common:3.2.0")
+
+
 
 
 
