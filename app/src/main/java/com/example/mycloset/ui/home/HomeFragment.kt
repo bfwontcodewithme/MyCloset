@@ -36,7 +36,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             findNavController().navigate(R.id.action_nav_home_to_nav_create_outfit)
         }
 
-        // My Items (בינתיים לאן שתרצי)
+        // My Items
         btnMyItems.setOnClickListener {
             findNavController().navigate(R.id.action_nav_home_to_nav_closet)
         }

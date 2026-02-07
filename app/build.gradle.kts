@@ -49,13 +49,16 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.activity:activity-ktx:1.9.3")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
 
     // Firebase (explicit versions - fixes "Could not find ... :")
     implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
     implementation("com.google.firebase:firebase-firestore-ktx:25.1.1")
     implementation("com.google.firebase:firebase-storage-ktx:21.0.1")
 
-
+    // ViewModel
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
@@ -74,14 +77,32 @@ dependencies {
     // Testing (Unit Tests)
     testImplementation("junit:junit:4.13.2")
 
-// Coroutines test
+    androidTestImplementation("androidx.test:core:1.5.0")
+    androidTestImplementation ("androidx.test:runner:1.5.0")
+    androidTestImplementation ("androidx.test:rules:1.5.0")
+    androidTestImplementation ("androidx.test.ext:junit:1.1.5")
+
+    // Coroutines test
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
-// Mockito + Kotlin helpers
+    // Mockito + Kotlin helpers
     testImplementation("org.mockito:mockito-core:5.11.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
 
+    // Espresso
+    androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation ("androidx.test.espresso:espresso-contrib:3.5.1")
+
+    // debug
+    debugImplementation ("androidx.fragment:fragment-testing:1.6.2")
 
 
 
+}
+configurations.all {
+    resolutionStrategy {
+        // This forces a single version of the 'monitor' library
+        // which is the #1 cause of the DirectExecutor error
+        force("androidx.test:monitor:1.6.0")
+    }
 }

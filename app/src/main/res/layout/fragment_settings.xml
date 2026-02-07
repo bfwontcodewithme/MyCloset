@@ -6,6 +6,7 @@
     android:padding="20dp">
 
     <TextView
+        android:id="@+id/tvSettingsTitle"
         android:text="Settings"
         android:textSize="24sp"
         android:textStyle="bold"

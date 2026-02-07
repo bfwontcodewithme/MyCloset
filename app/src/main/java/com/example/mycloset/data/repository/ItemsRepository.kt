@@ -5,8 +5,8 @@ import com.example.mycloset.data.model.Item
 import com.example.mycloset.data.remote.firebase.FirebaseItemsDataSource
 
 class ItemsRepository(
-    private val dataSource: FirebaseItemsDataSource = FirebaseItemsDataSource()
-) {
+    private val dataSource: FirebaseItemsDataSource = FirebaseItemsDataSource()) : IItemRepository
+ {
     suspend fun uploadImage(userId: String, uri: Uri): String {
         return dataSource.uploadItemImage(userId, uri)
     }
@@ -15,8 +15,7 @@ class ItemsRepository(
         return dataSource.addItem(userId, item)
     }
 
-
-    suspend fun getMyItems(userId: String): List<Item> {
+    override suspend fun getMyItems(userId: String): List<Item> {
         return dataSource.getItemsByOwner(userId)
     }
 }

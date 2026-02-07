@@ -50,7 +50,7 @@
     <!-- Home -->
     <fragment
         android:id="@+id/nav_home"
-        android:name="com.example.mycloset.ui.home.HomeFragment"
+        android:name="com.example.mycloset.ui.main.HomeFragment"
         android:label="Home">
 
         <action
@@ -75,6 +75,11 @@
     <fragment
         android:id="@+id/nav_profile"
         android:name="com.example.mycloset.ui.profile.ProfileFragment"
+        android:label="My Profile" />
+
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="com.example.mycloset.ui.main.SettingsFragment"
         android:label="My Profile" />
 
     <!-- Closet -->
