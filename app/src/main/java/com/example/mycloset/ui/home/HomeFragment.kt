@@ -21,6 +21,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val btnMyItems = view.findViewById<Button>(R.id.btnMyItems)
         val btnLogout = view.findViewById<Button>(R.id.btnLogout)
 
+        val btnRequestStylist = view.findViewById<Button>(R.id.btnRequestStylist)
+
+        btnRequestStylist.setOnClickListener {
+            findNavController().navigate(R.id.action_nav_home_to_nav_stylist_list)
+        }
+
         // Closets
         btnGoClosets.setOnClickListener {
             findNavController().navigate(R.id.action_nav_home_to_nav_closet)

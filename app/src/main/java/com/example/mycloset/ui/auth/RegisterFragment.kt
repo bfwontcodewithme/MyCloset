@@ -48,6 +48,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         etConfirm = view.findViewById(R.id.etConfirmPassword)
 
         rgRole = view.findViewById(R.id.rgRole)
+
         rbUser = view.findViewById(R.id.rbUser)
         rbStylist = view.findViewById(R.id.rbStylist)
 
@@ -66,6 +67,7 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         val pass = etPassword.text?.toString()?.trim().orEmpty()
         val confirm = etConfirm.text?.toString()?.trim().orEmpty()
 
+
         var ok = true
         if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             tilEmail.error = "Please enter a valid email"
@@ -81,7 +83,8 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         }
         if (!ok) return
 
-        val role = if (rbStylist.isChecked) "stylist" else "user"
+        val role = if (rbStylist.isChecked) "STYLIST" else "REGULAR"
+
 
         setLoading(true)
         auth.createUserWithEmailAndPassword(email, pass)
@@ -100,13 +103,14 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
                 db.collection("users").document(uid).set(userDoc)
                     .addOnSuccessListener {
                         setLoading(false)
-                        // To avoid crashes if stylist destination not added yet, go home for now
-                        findNavController().navigate(R.id.action_nav_register_to_nav_home)
+
+                        if (role.uppercase() == "STYLIST") {
+                            findNavController().navigate(R.id.action_global_stylist_home)
+                        } else {
+                            findNavController().navigate(R.id.action_global_home)
+                        }
                     }
-                    .addOnFailureListener { e ->
-                        setLoading(false)
-                        toast("Saved auth but failed Firestore: ${e.message}")
-                    }
+
             }
             .addOnFailureListener { e ->
                 setLoading(false)
