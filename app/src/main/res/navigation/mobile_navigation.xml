@@ -60,7 +60,16 @@
         <action
             android:id="@+id/action_nav_home_to_nav_profile"
             app:destination="@id/nav_profile" />
+        <action
+            android:id="@+id/action_nav_home_to_nav_add_item"
+            app:destination="@id/nav_add_item" />
+
+        <action
+            android:id="@+id/action_nav_home_to_nav_create_outfit"
+            app:destination="@id/nav_create_outfit" />
+
     </fragment>
+
 
     <!-- Profile (חשוב בגלל שיש לך בתפריט nav_profile) -->
     <fragment
