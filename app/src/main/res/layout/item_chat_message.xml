@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/tvMsgSender"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Me"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/tvMsgText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello"
+        android:layout_marginTop="2dp"/>
+
+    <TextView
+        android:id="@+id/tvMsgTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="12:00"
+        android:textSize="12sp"
+        android:layout_marginTop="2dp"/>
+</LinearLayout>

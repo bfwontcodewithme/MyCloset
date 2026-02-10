@@ -55,7 +55,7 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
                     perms[Manifest.permission.ACCESS_COARSE_LOCATION] == true
 
             if (granted) updateMyLocation()
-            else showStatus("Location permission denied ❌")
+            else showStatus("Location permission denied")
         }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -75,8 +75,14 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
 
         adapter = StylingRequestsAdapter(
             onAccept = { docId -> updateStatus(docId, "IN_PROGRESS") },
-            onDone = { docId -> updateStatus(docId, "DONE") }
+            onDone = { docId -> updateStatus(docId, "DONE") },
+            onChat = { docId ->
+                val b = Bundle().apply { putString("requestId", docId) }
+                // ✅ ניווט ישיר ליעד (לא action_global_chat)
+                findNavController().navigate(R.id.nav_chat, b)
+            }
         )
+
         rv.layoutManager = LinearLayoutManager(requireContext())
         rv.adapter = adapter
 
@@ -120,7 +126,7 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
     // ===== Requests Realtime =====
     private fun listenToMyRequestsRealtime() {
         val myUid = auth.currentUser?.uid ?: run {
-            showStatus("Not logged in ❌")
+            showStatus("Not logged in")
             return
         }
 
@@ -139,18 +145,14 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
                         return@addSnapshotListener
                     }
 
-
                     val items = snap?.documents.orEmpty().map { doc ->
                         val req = doc.toObject(StylingRequest::class.java) ?: StylingRequest()
                         StylingRequestWithId(docId = doc.id, req = req)
                     }
 
-// ✅ sort by status priority, then by date desc (already in query)
+                    // sort by status priority
                     val priority = mapOf("OPEN" to 0, "IN_PROGRESS" to 1, "DONE" to 2)
-                    allItems = items.sortedWith(compareBy(
-                        { priority[it.req.status] ?: 9 }
-                    ))
-
+                    allItems = items.sortedWith(compareBy { priority[it.req.status] ?: 9 })
 
                     applyFilterAndRender()
                 }
@@ -185,14 +187,14 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
         db.collection("styling_requests")
             .document(docId)
             .update("status", newStatus)
-            .addOnSuccessListener { toast("Updated to $newStatus ✅") }
+            .addOnSuccessListener { toast("Updated to $newStatus") }
             .addOnFailureListener { e -> toast("Failed: ${e.message}") }
     }
 
     // ===== Update Location =====
     private fun updateMyLocation() {
         val myUid = auth.currentUser?.uid ?: run {
-            showStatus("Not logged in ❌")
+            showStatus("Not logged in")
             return
         }
 
@@ -216,12 +218,12 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
                 db.collection("users").document(myUid)
                     .set(data, SetOptions.merge())
                     .addOnSuccessListener {
-                        showStatus("Location updated ✅")
-                        toast("Location saved ✅")
+                        showStatus("Location updated")
+                        toast("Location saved")
                     }
                     .addOnFailureListener { e ->
                         showStatus("Failed saving location: ${e.message}")
-                        toast("Failed saving location ❌")
+                        toast("Failed saving location")
                     }
             }
             .addOnFailureListener { e ->

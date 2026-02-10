@@ -23,12 +23,17 @@
         app:popUpTo="@id/mobile_navigation"
         app:popUpToInclusive="true" />
 
-    <!-- ✅ NEW: Stylist list (user chooses stylist) -->
     <action
         android:id="@+id/action_global_stylist_list"
         app:destination="@id/nav_stylist_list"
         app:popUpTo="@id/mobile_navigation"
         app:popUpToInclusive="false" />
+
+    <!-- ✅ NEW: global chat -->
+    <action
+        android:id="@+id/action_global_chat"
+        app:destination="@id/nav_chat" />
+
 
     <!-- Login -->
     <fragment
@@ -40,14 +45,12 @@
             android:id="@+id/action_nav_login_to_nav_register"
             app:destination="@id/nav_register" />
 
-        <!-- Regular user -->
         <action
             android:id="@+id/action_nav_login_to_nav_home"
             app:destination="@id/nav_home"
             app:popUpTo="@id/nav_login"
             app:popUpToInclusive="true" />
 
-        <!-- Stylist -->
         <action
             android:id="@+id/action_nav_login_to_nav_stylist_home"
             app:destination="@id/nav_stylist_home"
@@ -61,14 +64,12 @@
         android:name="com.example.mycloset.ui.auth.RegisterFragment"
         android:label="Register">
 
-        <!-- Regular user -->
         <action
             android:id="@+id/action_nav_register_to_nav_home"
             app:destination="@id/nav_home"
             app:popUpTo="@id/nav_login"
             app:popUpToInclusive="true" />
 
-        <!-- Stylist  -->
         <action
             android:id="@+id/action_nav_register_to_nav_stylist_home"
             app:destination="@id/nav_stylist_home"
@@ -76,7 +77,7 @@
             app:popUpToInclusive="true" />
     </fragment>
 
-    <!-- Home (Regular User Home) -->
+    <!-- Home -->
     <fragment
         android:id="@+id/nav_home"
         android:name="com.example.mycloset.ui.home.HomeFragment"
@@ -98,13 +99,12 @@
             android:id="@+id/action_nav_home_to_nav_create_outfit"
             app:destination="@id/nav_create_outfit" />
 
-        <!-- ✅ NEW: go to choose stylist list -->
         <action
             android:id="@+id/action_nav_home_to_nav_stylist_list"
             app:destination="@id/nav_stylist_list" />
     </fragment>
 
-    <!-- ✅ NEW: Stylist List -->
+    <!-- Stylist List -->
     <fragment
         android:id="@+id/nav_stylist_list"
         android:name="com.example.mycloset.ui.stylist.StylistListFragment"
@@ -153,9 +153,24 @@
         android:id="@+id/nav_create_outfit"
         android:name="com.example.mycloset.ui.outfit.CreateOutfitFragment"
         android:label="Create Outfit" />
+
+    <!-- My Requests -->
     <fragment
         android:id="@+id/nav_my_requests"
         android:name="com.example.mycloset.ui.requests.MyRequestsFragment"
         android:label="My Requests" />
+
+    <!--  Chat Screen + argument -->
+    <fragment
+        android:id="@+id/nav_chat"
+        android:name="com.example.mycloset.ui.chat.ChatFragment"
+        android:label="Chat">
+
+        <argument
+            android:name="requestId"
+            app:argType="string" />
+    </fragment>
+
+
 
 </navigation>

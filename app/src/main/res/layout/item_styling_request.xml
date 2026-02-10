@@ -44,41 +44,67 @@
             android:layout_marginTop="6dp"
             android:visibility="gone"/>
 
-        <!--  Actions -->
+        <!-- ✅ Actions (2 rows so Chat is always visible) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="10dp">
+            android:orientation="vertical"
+            android:layout_marginTop="12dp">
 
-            <!--  Copy Email -->
-            <Button
-                android:id="@+id/btnCopyEmail"
-                android:layout_width="wrap_content"
+            <!-- Row 1 -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Copy Email" />
+                android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/btnAccept"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:text="Accept"
-                android:visibility="gone"/>
+                <Button
+                    android:id="@+id/btnCopyEmail"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Copy Email" />
 
-            <Button
-                android:id="@+id/btnDone"
-                android:layout_width="wrap_content"
+                <Button
+                    android:id="@+id/btnEmailCustomer"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="10dp"
+                    android:text="Email Customer" />
+            </LinearLayout>
+
+            <!-- Row 2 -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:text="Done"
-                android:visibility="gone"/>
-            <Button
-                android:id="@+id/btnEmailCustomer"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:text="Email Customer" />
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <Button
+                    android:id="@+id/btnAccept"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Accept"
+                    android:visibility="gone"/>
+
+                <Button
+                    android:id="@+id/btnDone"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="10dp"
+                    android:text="Done"
+                    android:visibility="gone"/>
+
+                <Button
+                    android:id="@+id/btnChat"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="10dp"
+                    android:text="Chat" />
+            </LinearLayout>
 
         </LinearLayout>
 
