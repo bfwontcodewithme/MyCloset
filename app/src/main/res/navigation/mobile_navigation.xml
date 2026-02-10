@@ -153,5 +153,9 @@
         android:id="@+id/nav_create_outfit"
         android:name="com.example.mycloset.ui.outfit.CreateOutfitFragment"
         android:label="Create Outfit" />
+    <fragment
+        android:id="@+id/nav_my_requests"
+        android:name="com.example.mycloset.ui.requests.MyRequestsFragment"
+        android:label="My Requests" />
 
 </navigation>

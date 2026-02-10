@@ -22,6 +22,15 @@
         android:theme="@style/Theme.MyCloset"
         tools:targetApi="31">
 
+        <!-- ✅ FCM Messaging Service -->
+        <service
+            android:name="com.example.mycloset.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <!-- FileProvider לצילום -->
         <provider
             android:name="androidx.core.content.FileProvider"

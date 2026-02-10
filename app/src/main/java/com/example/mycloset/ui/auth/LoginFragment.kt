@@ -22,6 +22,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.firestore.SetOptions
+
 
 class LoginFragment : Fragment(R.layout.fragment_login) {
 
@@ -185,6 +188,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         ref.get()
             .addOnSuccessListener { snap ->
                 if (snap.exists()) {
+                    updateFcmToken()
                     routeByRole(uid)
                 } else {
                     val data = hashMapOf(
@@ -193,7 +197,9 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                         "createdAt" to FieldValue.serverTimestamp()
                     )
                     ref.set(data)
-                        .addOnSuccessListener { routeByRole(uid) }
+                        .addOnSuccessListener {
+                            updateFcmToken()
+                            routeByRole(uid) }
                         .addOnFailureListener { e -> setLoading(false); toast("Failed saving user: ${e.message}") }
                 }
             }
@@ -223,6 +229,16 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             }
     }
 
+    private fun updateFcmToken() {
+        val uid = auth.currentUser?.uid ?: return
+
+        FirebaseMessaging.getInstance().token
+            .addOnSuccessListener { token ->
+                db.collection("users")
+                    .document(uid)
+                    .set(mapOf("fcmToken" to token), SetOptions.merge())
+            }
+    }
 
 
 

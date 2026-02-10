@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:padding="20dp">
 
+    <!-- Title -->
     <TextView
         android:id="@+id/tvStylistTitle"
         android:layout_width="wrap_content"
@@ -17,48 +18,94 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <Button
-        android:id="@+id/btnStylistLogout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Logout"
-        app:layout_constraintTop_toBottomOf="@id/tvStylistTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp"/>
-
-    <TextView
-        android:id="@+id/tvEmptyRequests"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="No styling requests yet"
-        android:textSize="16sp"
-        android:gravity="center"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/btnStylistLogout"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
-
+    <!-- Update Location -->
     <Button
         android:id="@+id/btnUpdateLocation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Update My Location"
+        android:layout_marginTop="12dp"
         app:layout_constraintTop_toBottomOf="@id/tvStylistTitle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp"/>
+        app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Logout -->
+    <Button
+        android:id="@+id/btnStylistLogout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Logout"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/btnUpdateLocation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Filters -->
+    <LinearLayout
+        android:id="@+id/rowFilters"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp"
+        app:layout_constraintTop_toBottomOf="@id/btnStylistLogout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/btnFilterAll"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="All" />
+
+        <Button
+            android:id="@+id/btnFilterOpen"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Open" />
+
+        <Button
+            android:id="@+id/btnFilterInProgress"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="In Progress" />
+
+        <Button
+            android:id="@+id/btnFilterDone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Done" />
+    </LinearLayout>
+
+    <!-- Status / Empty -->
+    <TextView
+        android:id="@+id/tvEmptyRequests"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="No styling requests yet"
+        android:textSize="15sp"
+        android:gravity="center"
+        android:layout_marginTop="12dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/rowFilters"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Requests List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvStylingRequests"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/btnStylistLogout"
+        android:layout_marginTop="12dp"
+        app:layout_constraintTop_toBottomOf="@id/tvEmptyRequests"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
