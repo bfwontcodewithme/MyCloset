@@ -43,7 +43,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp"/>
 
-    <!-- ✅ חדש: קיצור דרך לתהליך המרכזי -->
     <Button
         android:id="@+id/btnAddItem"
         android:layout_width="0dp"
@@ -68,10 +67,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp"/>
 
-
-
-
-
     <Button
         android:id="@+id/btnRequestStylist"
         android:layout_width="0dp"
@@ -84,18 +79,30 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp"/>
 
+    <!-- ✅ חדש: My Requests -->
+    <Button
+        android:id="@+id/btnMyRequests"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="My Requests"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#3949AB"
+        app:layout_constraintTop_toBottomOf="@id/btnRequestStylist"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/>
 
+    <!-- Logout בתחתית -->
     <Button
         android:id="@+id/btnLogout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="88dp"
         android:backgroundTint="#FFFFFF"
         android:text="Logout"
         android:textColor="#D81B60"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnMyItems" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="12dp"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

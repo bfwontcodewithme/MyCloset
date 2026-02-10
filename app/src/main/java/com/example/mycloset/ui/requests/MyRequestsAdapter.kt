@@ -1,10 +1,12 @@
 package com.example.mycloset.ui.requests
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -35,15 +37,21 @@ class MyRequestsAdapter(
     }
 
     class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
         private val tvStatus: TextView = itemView.findViewById(R.id.tvMyReqStatus)
         private val tvDate: TextView = itemView.findViewById(R.id.tvMyReqDate)
         private val tvNote: TextView = itemView.findViewById(R.id.tvMyReqNote)
         private val tvStylist: TextView = itemView.findViewById(R.id.tvMyReqStylist)
+
         private val btnCancel: Button = itemView.findViewById(R.id.btnCancelRequest)
+
+        // ✅ חשוב: ב-item_my_request.xml צריך להיות כפתור עם id הזה
+        private val btnChat: Button = itemView.findViewById(R.id.btnOpenChat)
 
         private val fmt = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
 
         fun bind(r: MyRequestUI, onCancel: (MyRequestUI) -> Unit) {
+
             tvStatus.text = "Status: ${r.status}"
 
             val dateText = r.createdAt?.toDate()?.let { fmt.format(it) } ?: "-"
@@ -62,6 +70,17 @@ class MyRequestsAdapter(
             } else {
                 btnCancel.visibility = View.GONE
                 btnCancel.setOnClickListener(null)
+            }
+
+            // ✅ Chat
+            btnChat.setOnClickListener {
+                val b = Bundle().apply {
+                    putString("requestId", r.docId) // docId של הבקשה
+                }
+
+                Navigation.findNavController(itemView)
+                    .navigate(R.id.nav_chat, b)
+
             }
         }
     }

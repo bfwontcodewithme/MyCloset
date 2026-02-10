@@ -43,7 +43,7 @@
             android:layout_marginTop="6dp"
             android:text="Stylist: -"/>
 
-        <!-- ✅ NEW: Cancel button (only for OPEN) -->
+        <!--  Cancel button (only for OPEN) -->
         <Button
             android:id="@+id/btnCancelRequest"
             android:layout_width="wrap_content"
@@ -51,6 +51,14 @@
             android:layout_marginTop="10dp"
             android:text="Cancel"
             android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btnOpenChat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Chat" />
+
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
