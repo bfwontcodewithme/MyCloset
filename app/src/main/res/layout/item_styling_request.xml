@@ -36,6 +36,52 @@
             android:text="Date: -"
             android:layout_marginTop="4dp"/>
 
+        <TextView
+            android:id="@+id/tvReqNote"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Note: -"
+            android:layout_marginTop="6dp"
+            android:visibility="gone"/>
+
+        <!--  Actions -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp">
+
+            <!--  Copy Email -->
+            <Button
+                android:id="@+id/btnCopyEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Copy Email" />
+
+            <Button
+                android:id="@+id/btnAccept"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Accept"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/btnDone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Done"
+                android:visibility="gone"/>
+            <Button
+                android:id="@+id/btnEmailCustomer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="Email Customer" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
 </androidx.cardview.widget.CardView>

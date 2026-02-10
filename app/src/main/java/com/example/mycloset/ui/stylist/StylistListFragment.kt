@@ -6,10 +6,12 @@ import android.location.Location
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.EditText
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.mycloset.R
@@ -39,9 +41,8 @@ class StylistListFragment : Fragment(R.layout.fragment_stylist_list) {
             val granted = perms[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
                     perms[Manifest.permission.ACCESS_COARSE_LOCATION] == true
 
-            if (granted) {
-                loadUserLocationAndStylists()
-            } else {
+            if (granted) loadUserLocationAndStylists()
+            else {
                 toast("Location permission denied")
                 loadStylistsWithoutDistance()
             }
@@ -63,23 +64,29 @@ class StylistListFragment : Fragment(R.layout.fragment_stylist_list) {
         }
 
         progress.visibility = View.VISIBLE
-
         val token = CancellationTokenSource()
-        fusedClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, token.token)
-            .addOnSuccessListener { loc ->
-                if (loc == null) {
-                    progress.visibility = View.GONE
-                    toast("Couldn't get your location")
-                    loadStylistsWithoutDistance()
-                    return@addOnSuccessListener
+
+        try {
+            fusedClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, token.token)
+                .addOnSuccessListener { loc ->
+                    if (loc == null) {
+                        progress.visibility = View.GONE
+                        toast("Couldn't get your location")
+                        loadStylistsWithoutDistance()
+                        return@addOnSuccessListener
+                    }
+                    loadStylistsWithDistance(loc.latitude, loc.longitude)
                 }
-                loadStylistsWithDistance(loc.latitude, loc.longitude)
-            }
-            .addOnFailureListener {
-                progress.visibility = View.GONE
-                toast("Location error: ${it.message}")
-                loadStylistsWithoutDistance()
-            }
+                .addOnFailureListener {
+                    progress.visibility = View.GONE
+                    toast("Location error: ${it.message}")
+                    loadStylistsWithoutDistance()
+                }
+        } catch (se: SecurityException) {
+            progress.visibility = View.GONE
+            toast("Location permission missing")
+            loadStylistsWithoutDistance()
+        }
     }
 
     private fun loadStylistsWithDistance(lat: Double, lng: Double) {
@@ -97,8 +104,12 @@ class StylistListFragment : Fragment(R.layout.fragment_stylist_list) {
                     val uid = doc.id
                     val email = doc.getString("email") ?: "(no email)"
 
-                    val locMap = doc.get("location") as? Map<*, *>
-                    val geo = locMap?.get("geo") as? GeoPoint
+                    val geo: GeoPoint? = when (val locAny = doc.get("location")) {
+                        is GeoPoint -> locAny
+                        is Map<*, *> -> (locAny["geo"] as? GeoPoint)
+                        else -> null
+                    }
+
                     if (geo == null) continue
 
                     val distance = distanceMeters(lat, lng, geo.latitude, geo.longitude)
@@ -115,20 +126,15 @@ class StylistListFragment : Fragment(R.layout.fragment_stylist_list) {
                     stylistTitles.add(r.second)
                 }
 
-                if (stylistTitles.isEmpty()) {
-                    toast("No stylists with location yet")
-                }
-
-                val adapter = ArrayAdapter(
+                listView.adapter = ArrayAdapter(
                     requireContext(),
                     android.R.layout.simple_list_item_1,
                     stylistTitles
                 )
-                listView.adapter = adapter
 
                 listView.setOnItemClickListener { _, _, position, _ ->
                     val chosenStylistId = stylistUids[position]
-                    createStylingRequest(chosenStylistId)
+                    showNoteDialogAndSendRequest(chosenStylistId)
                 }
             }
             .addOnFailureListener { e ->
@@ -155,16 +161,15 @@ class StylistListFragment : Fragment(R.layout.fragment_stylist_list) {
                     stylistTitles.add(email)
                 }
 
-                val adapter = ArrayAdapter(
+                listView.adapter = ArrayAdapter(
                     requireContext(),
                     android.R.layout.simple_list_item_1,
                     stylistTitles
                 )
-                listView.adapter = adapter
 
                 listView.setOnItemClickListener { _, _, position, _ ->
                     val chosenStylistId = stylistUids[position]
-                    createStylingRequest(chosenStylistId)
+                    showNoteDialogAndSendRequest(chosenStylistId)
                 }
             }
             .addOnFailureListener { e ->
@@ -173,7 +178,23 @@ class StylistListFragment : Fragment(R.layout.fragment_stylist_list) {
             }
     }
 
-    private fun createStylingRequest(stylistId: String) {
+    private fun showNoteDialogAndSendRequest(stylistId: String) {
+        val input = EditText(requireContext())
+        input.hint = "Write a note (optional)"
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Styling Request")
+            .setMessage("What do you need from the stylist?")
+            .setView(input)
+            .setPositiveButton("Send") { _, _ ->
+                val note = input.text?.toString()?.trim().orEmpty()
+                createStylingRequest(stylistId, note)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun createStylingRequest(stylistId: String, note: String) {
         val user = auth.currentUser ?: run {
             toast("Not logged in")
             return
@@ -182,15 +203,15 @@ class StylistListFragment : Fragment(R.layout.fragment_stylist_list) {
         val fromUserId = user.uid
         val fromEmail = user.email ?: ""
 
-        // מונע כפילות: בקשה אחת לכל זוג User+Stylist
-        val docId = "${fromUserId}_$stylistId"
+        // ✅ NEW: unique doc id per request (history)
+        val docId = "${fromUserId}_${stylistId}_${System.currentTimeMillis()}"
 
         val data = hashMapOf(
             "stylistId" to stylistId,
             "fromUserId" to fromUserId,
             "fromEmail" to fromEmail,
             "status" to "OPEN",
-            "note" to "",
+            "note" to note,
             "createdAt" to FieldValue.serverTimestamp()
         )
 
@@ -208,6 +229,7 @@ class StylistListFragment : Fragment(R.layout.fragment_stylist_list) {
                 toast("Failed to send request: ${e.message}")
             }
     }
+
 
     private fun distanceMeters(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Float {
         val res = FloatArray(1)
