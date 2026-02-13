@@ -1,3 +1,4 @@
+// ui/home/HomeFragment.kt
 package com.example.mycloset.ui.home
 
 import android.os.Bundle
@@ -8,7 +9,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.mycloset.R
 import com.google.firebase.auth.FirebaseAuth
 
-class HomeFragment : Fragment(R.layout.fragment_home) {
+class MainHomeFragment : Fragment(R.layout.fragment_home) {
 
     private val auth by lazy { FirebaseAuth.getInstance() }
 
@@ -20,36 +21,33 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val btnAddItem = view.findViewById<Button>(R.id.btnAddItem)
         val btnMyItems = view.findViewById<Button>(R.id.btnMyItems)
         val btnRequestStylist = view.findViewById<Button>(R.id.btnRequestStylist)
-
-        // ✅ חדש
         val btnMyRequests = view.findViewById<Button>(R.id.btnMyRequests)
-
         val btnLogout = view.findViewById<Button>(R.id.btnLogout)
-
-        btnRequestStylist.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_home_to_nav_stylist_list)
-        }
 
         btnGoClosets.setOnClickListener {
             findNavController().navigate(R.id.action_nav_home_to_nav_closet)
+        }
+
+        // ✅ Outfits הולך לרשימת Outfits (לא ל-Create)
+        btnGoOutfits.setOnClickListener {
+            findNavController().navigate(R.id.action_nav_home_to_nav_outfit_list)
         }
 
         btnAddItem.setOnClickListener {
             findNavController().navigate(R.id.action_nav_home_to_nav_add_item)
         }
 
-        btnGoOutfits.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_home_to_nav_create_outfit)
-        }
 
         btnMyItems.setOnClickListener {
             findNavController().navigate(R.id.action_nav_home_to_nav_closet)
         }
 
-        // ✅ My Requests -> המסך של הבקשות
+        btnRequestStylist.setOnClickListener {
+            findNavController().navigate(R.id.action_nav_home_to_nav_stylist_list)
+        }
+
         btnMyRequests.setOnClickListener {
             findNavController().navigate(R.id.nav_my_requests)
-            // אם תרצי בצורה “יותר נקייה” עם action, נגיד לי ונעשה action ב־nav.
         }
 
         btnLogout.setOnClickListener {
