@@ -6,7 +6,16 @@ data class StylingRequest(
     val stylistId: String = "",
     val fromUserId: String = "",
     val fromEmail: String = "",
-    val status: String = "OPEN",     // OPEN / IN_PROGRESS / DONE
+    val status: String = "OPEN",
     val note: String = "",
-    val createdAt: Timestamp? = null
+    val createdAt: Timestamp? = null,
+
+    //  chat summary
+    val lastMessage: String = "",
+    val lastMessageAt: Timestamp? = null,
+    val lastSenderId: String = "",
+
+    //  unread counters
+    val unreadForUser: Long = 0,
+    val unreadForStylist: Long = 0
 )

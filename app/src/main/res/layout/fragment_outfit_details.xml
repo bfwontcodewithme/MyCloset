@@ -1,14 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.outfit.OutfitDetailsFragment">
+    android:padding="16dp"
+    android:background="#FFF1F6">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:id="@+id/tvOutfitTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Outfit"
+        android:textStyle="bold"
+        android:textSize="22sp"
+        android:textColor="#AD1457"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-</FrameLayout>
+    <Button
+        android:id="@+id/btnShareOutfit"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Share Outfit"
+        android:layout_marginTop="10dp"
+        android:backgroundTint="#8E24AA"
+        android:textColor="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/tvOutfitTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ✅ NEW: owner inbox -->
+    <Button
+        android:id="@+id/btnOpenSuggestions"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Open Suggestions Inbox"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="#3949AB"
+        android:textColor="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/btnShareOutfit"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <ProgressBar
+        android:id="@+id/progressOutfitDetails"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/btnOpenSuggestions"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <TextView
+        android:id="@+id/tvOutfitEmpty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No items in this outfit"
+        android:textSize="16sp"
+        android:textColor="#666666"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/btnOpenSuggestions"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvOutfitItems"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        app:layout_constraintTop_toBottomOf="@id/btnOpenSuggestions"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

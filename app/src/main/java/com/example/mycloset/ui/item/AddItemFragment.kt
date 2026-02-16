@@ -26,7 +26,6 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
     private var selectedImageUri: Uri? = null
     private var cameraImageUri: Uri? = null
 
-    // Gallery
     private val pickImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
@@ -35,17 +34,12 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
             }
         }
 
-    // Camera permission
     private val requestCameraPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-            if (granted) {
-                openCamera()
-            } else {
-                Toast.makeText(requireContext(), "Camera permission denied", Toast.LENGTH_SHORT).show()
-            }
+            if (granted) openCamera()
+            else Toast.makeText(requireContext(), "Camera permission denied", Toast.LENGTH_SHORT).show()
         }
 
-    // Camera
     private val takePictureLauncher =
         registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             if (success) {
@@ -66,6 +60,9 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
             return
         }
 
+        // ✅ מגיע מה-ItemListFragment
+        val closetIdFromArgs = arguments?.getString("closetId").orEmpty()
+
         val btnCamera = view.findViewById<Button>(R.id.btnTakePhoto)
         val btnGallery = view.findViewById<Button>(R.id.btnPickImage)
         val btnSave = view.findViewById<Button>(R.id.btnSave)
@@ -77,9 +74,7 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
         val etSeason = view.findViewById<EditText>(R.id.etSeason)
         val etTags = view.findViewById<EditText>(R.id.etTags)
 
-        // Camera
         btnCamera.setOnClickListener {
-            // אם אין בכלל מצלמה במכשיר
             val hasCamera = requireContext().packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
             if (!hasCamera) {
                 Toast.makeText(requireContext(), "No camera on this device", Toast.LENGTH_SHORT).show()
@@ -91,19 +86,12 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                 Manifest.permission.CAMERA
             ) == PackageManager.PERMISSION_GRANTED
 
-            if (granted) {
-                openCamera()
-            } else {
-                requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-            }
+            if (granted) openCamera()
+            else requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
 
-        // Gallery
-        btnGallery.setOnClickListener {
-            pickImageLauncher.launch("image/*")
-        }
+        btnGallery.setOnClickListener { pickImageLauncher.launch("image/*") }
 
-        // Save
         btnSave.setOnClickListener {
             val name = etName.text.toString().trim()
             val type = etType.text.toString().trim()
@@ -119,18 +107,20 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
                 return@setOnClickListener
             }
 
+            // אם נכנסת ל-AddItem בלי ארון - נשמור ל-default (עדיף מאשר לקרוס)
+            val closetId = if (closetIdFromArgs.isBlank()) "default" else closetIdFromArgs
+
             lifecycleScope.launch {
                 try {
                     setLoading(true, progress, btnSave, btnCamera, btnGallery)
 
-                    // If there is a picture -> upload to storage, otherwise ""
                     val imageUrl = selectedImageUri?.let { uri ->
                         repo.uploadImage(userId, uri)
                     } ?: ""
 
                     val item = Item(
                         ownerUid = userId,
-                        closetId = "default",
+                        closetId = closetId,
                         name = name,
                         type = type,
                         color = color,
@@ -172,7 +162,6 @@ class AddItemFragment : Fragment(R.layout.fragment_add_item) {
     }
 
     private fun createImageUri(): Uri {
-        // חשוב: נשמור בתוך cache/images (מותאם ל-file_paths.xml המתוקן למטה)
         val imagesDir = File(requireContext().cacheDir, "images")
         imagesDir.mkdirs()
         val file = File(imagesDir, "camera_${System.currentTimeMillis()}.jpg")

@@ -30,6 +30,10 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
     private var reg: ListenerRegistration? = null
     private lateinit var adapter: ChatAdapter
 
+    private var myRole: String = "REGULAR"
+    private var requestIdArg: String = ""      // מה שמגיע ב-args
+    private var requestDocId: String = ""      // ה-docId האמיתי ב-Firestore
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -45,9 +49,9 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
             return
         }
 
-        val requestId = arguments?.getString("requestId").orEmpty()
-        if (requestId.isBlank()) {
-            toast("Missing requestId (chat can't open)")
+        requestIdArg = arguments?.getString("requestId").orEmpty()
+        if (requestIdArg.isBlank()) {
+            toast("Missing requestId")
             findNavController().navigateUp()
             return
         }
@@ -56,12 +60,21 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         rv.layoutManager = LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
         rv.adapter = adapter
 
-        listenMessages(requestId)
+        showStatus("Opening chat...")
+
+        loadMyRole(myUid)
+
+        // ✅ כאן הקסם: פותחים צ'אט גם אם requestId הוא "legacy" עם _timestamp
+        resolveRequestDocIdThenListen(myUid, requestIdArg)
 
         btnSend.setOnClickListener {
             val text = etMsg.text?.toString()?.trim().orEmpty()
             if (text.isBlank()) return@setOnClickListener
-            sendMessage(requestId, myUid, text)
+            if (requestDocId.isBlank()) {
+                toast("Chat not ready yet")
+                return@setOnClickListener
+            }
+            sendMessage(requestDocId, myUid, text)
         }
     }
 
@@ -71,59 +84,161 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         reg = null
     }
 
-    private fun listenMessages(requestId: String) {
-        tvEmpty.visibility = View.VISIBLE
-        tvEmpty.text = "Loading chat..."
-        rv.visibility = View.GONE
+    private fun loadMyRole(myUid: String) {
+        db.collection("users")
+            .document(myUid)
+            .get()
+            .addOnSuccessListener { doc ->
+                myRole = doc.getString("role") ?: "REGULAR"
+            }
+            .addOnFailureListener {
+                myRole = "REGULAR"
+            }
+    }
+
+    /**
+     * ✅ 1) ננסה לפתוח ישירות לפי requestIdArg
+     * ✅ 2) אם אין מסמך, ובקלט יש "_" (legacy id) → נפתור ל-docId אמיתי לפי fromUserId+stylistId
+     */
+    private fun resolveRequestDocIdThenListen(myUid: String, requestIdArg: String) {
+        val directRef = db.collection("styling_requests").document(requestIdArg)
+
+        directRef.get()
+            .addOnSuccessListener { doc ->
+                if (doc.exists()) {
+                    requestDocId = doc.id
+                    verifyParticipantThenListen(myUid, doc)
+                } else {
+                    // fallback: legacy id כמו from_stylist_timestamp
+                    resolveLegacyIdByQuery(myUid, requestIdArg)
+                }
+            }
+            .addOnFailureListener { e ->
+                showStatus("Failed opening request: ${e.message}")
+            }
+    }
+
+    private fun resolveLegacyIdByQuery(myUid: String, legacy: String) {
+        val parts = legacy.split("_")
+        if (parts.size < 2) {
+            showStatus("Request not found\nrequestId=$legacy")
+            return
+        }
+
+        val fromUserId = parts[0]
+        val stylistId = parts[1]
+
+        showStatus("Resolving chat...\n(fromUserId/stylistId)")
+
+        db.collection("styling_requests")
+            .whereEqualTo("fromUserId", fromUserId)
+            .whereEqualTo("stylistId", stylistId)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { snap ->
+                val bestDoc = snap.documents.firstOrNull()
+                if (bestDoc == null) {
+                    showStatus("Request not found (legacy)\nrequestId=$legacy")
+                    return@addOnSuccessListener
+                }
+
+                requestDocId = bestDoc.id
+                verifyParticipantThenListen(myUid, bestDoc)
+            }
+            .addOnFailureListener { e ->
+                showStatus("Failed resolving legacy id: ${e.message}")
+            }
+    }
+
+    private fun verifyParticipantThenListen(myUid: String, doc: com.google.firebase.firestore.DocumentSnapshot) {
+        val fromUserId = doc.getString("fromUserId").orEmpty()
+        val stylistId = doc.getString("stylistId").orEmpty()
+
+        val isParticipant = (myUid == fromUserId) || (myUid == stylistId)
+        if (!isParticipant) {
+            showStatus(
+                "No permission for this chat\n" +
+                        "myUid=$myUid\n" +
+                        "fromUserId=$fromUserId\n" +
+                        "stylistId=$stylistId"
+            )
+            return
+        }
+
+        // reset unread כשנכנסים
+        val resetField = if (myUid == stylistId) "unreadForStylist" else "unreadForUser"
+        db.collection("styling_requests").document(doc.id).update(resetField, 0)
+
+        listenMessages(doc.id)
+    }
+
+    private fun listenMessages(requestDocId: String) {
+        showStatus("Loading messages...")
 
         reg?.remove()
         reg = db.collection("styling_requests")
-            .document(requestId)
+            .document(requestDocId)
             .collection("messages")
             .orderBy("createdAt", Query.Direction.ASCENDING)
             .addSnapshotListener { snap, err ->
                 if (err != null) {
-                    tvEmpty.visibility = View.VISIBLE
-                    tvEmpty.text = "Failed: ${err.message}"
-                    rv.visibility = View.GONE
+                    showStatus("Failed: ${err.message}")
                     return@addSnapshotListener
                 }
 
                 val list = snap?.documents.orEmpty().mapNotNull { d ->
-                    d.toObject(ChatMessage::class.java)
+                    d.toObject(ChatMessage::class.java)?.copy(id = d.id)
                 }
 
                 adapter.submitList(list)
 
-                val empty = list.isEmpty()
-                tvEmpty.visibility = if (empty) View.VISIBLE else View.GONE
-                rv.visibility = if (empty) View.GONE else View.VISIBLE
-                if (empty) tvEmpty.text = "No messages yet"
-
-                if (!empty) rv.scrollToPosition(list.size - 1)
+                if (list.isEmpty()) {
+                    showStatus("No messages yet")
+                } else {
+                    tvEmpty.visibility = View.GONE
+                    rv.visibility = View.VISIBLE
+                    rv.scrollToPosition(list.size - 1)
+                }
             }
     }
 
-    private fun sendMessage(requestId: String, myUid: String, text: String) {
-        val role = "STYLIST" // אם את רוצה דיוק לפי משתמש – תגידי ואני אעשה fetch מה-users/{uid}
-
-        val data = hashMapOf(
+    private fun sendMessage(requestDocId: String, myUid: String, text: String) {
+        val msg = hashMapOf(
             "senderId" to myUid,
-            "senderRole" to role,
+            "senderRole" to myRole,
             "text" to text,
-            "createdAt" to FieldValue.serverTimestamp()
+            "createdAt" to FieldValue.serverTimestamp(),
+            "seenBy" to listOf(myUid)
         )
 
-        db.collection("styling_requests")
-            .document(requestId)
-            .collection("messages")
-            .add(data)
+        val reqRef = db.collection("styling_requests").document(requestDocId)
+
+        reqRef.collection("messages")
+            .add(msg)
             .addOnSuccessListener {
                 etMsg.setText("")
+
+                // ✅ summary + unread counter (לא קריטי לצ'אט עצמו)
+                val unreadField = if (myRole == "STYLIST") "unreadForUser" else "unreadForStylist"
+                reqRef.update(
+                    mapOf(
+                        "lastMessage" to text,
+                        "lastMessageAt" to FieldValue.serverTimestamp(),
+                        "lastSenderId" to myUid,
+                        unreadField to FieldValue.increment(1)
+                    )
+                )
             }
             .addOnFailureListener { e ->
                 toast("Send failed: ${e.message}")
             }
+    }
+
+    private fun showStatus(msg: String) {
+        tvEmpty.visibility = View.VISIBLE
+        tvEmpty.text = msg
+        rv.visibility = View.GONE
     }
 
     private fun toast(msg: String) {

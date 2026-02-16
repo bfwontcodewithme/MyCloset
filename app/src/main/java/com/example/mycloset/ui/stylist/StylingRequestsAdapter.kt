@@ -15,7 +15,7 @@ import java.util.Locale
 class StylingRequestsAdapter(
     private val onAccept: (String) -> Unit,
     private val onDone: (String) -> Unit,
-    private val onChat: (String) -> Unit
+    private val onChat: (StylingRequestWithId) -> Unit
 ) : ListAdapter<StylingRequestWithId, StylingRequestsAdapter.VH>(Diff) {
 
     object Diff : DiffUtil.ItemCallback<StylingRequestWithId>() {
@@ -28,7 +28,6 @@ class StylingRequestsAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
         val v = LayoutInflater.from(parent.context)
-            // ✅ לפי התיקייה שלך: res/layout/item_styling_request.xml
             .inflate(R.layout.item_styling_request, parent, false)
         return VH(v)
     }
@@ -44,17 +43,23 @@ class StylingRequestsAdapter(
         private val tvDate: TextView = itemView.findViewById(R.id.tvReqDate)
         private val tvNote: TextView = itemView.findViewById(R.id.tvReqNote)
 
+        // ✅ new
+        private val tvLastMessage: TextView = itemView.findViewById(R.id.tvReqLastMessage)
+        private val tvLastTime: TextView = itemView.findViewById(R.id.tvReqLastTime)
+        private val tvUnread: TextView = itemView.findViewById(R.id.tvReqUnread)
+
         private val btnAccept: Button = itemView.findViewById(R.id.btnAccept)
         private val btnDone: Button = itemView.findViewById(R.id.btnDone)
         private val btnChat: Button = itemView.findViewById(R.id.btnChat)
 
-        private val fmt = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        private val fmtDate = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        private val fmtTime = SimpleDateFormat("HH:mm", Locale.getDefault())
 
         fun bind(
             item: StylingRequestWithId,
             onAccept: (String) -> Unit,
             onDone: (String) -> Unit,
-            onChat: (String) -> Unit
+            onChat: (StylingRequestWithId) -> Unit
         ) {
             val docId = item.docId
             val r = item.req
@@ -62,7 +67,7 @@ class StylingRequestsAdapter(
             tvEmail.text = r.fromEmail.ifBlank { "(unknown)" }
             tvStatus.text = "Status: ${r.status}"
 
-            val dateText = r.createdAt?.toDate()?.let { fmt.format(it) } ?: "-"
+            val dateText = r.createdAt?.toDate()?.let { fmtDate.format(it) } ?: "-"
             tvDate.text = "Date: $dateText"
 
             if (r.note.isBlank()) {
@@ -70,6 +75,26 @@ class StylingRequestsAdapter(
             } else {
                 tvNote.visibility = View.VISIBLE
                 tvNote.text = "Note: ${r.note}"
+            }
+
+            // ✅ last message preview
+            tvLastMessage.text = if (r.lastMessage.isBlank()) "(no messages yet)" else r.lastMessage
+
+            val t = r.lastMessageAt?.toDate()
+            if (t == null) {
+                tvLastTime.visibility = View.GONE
+            } else {
+                tvLastTime.visibility = View.VISIBLE
+                tvLastTime.text = fmtTime.format(t)
+            }
+
+            // ✅ unread badge for stylist
+            val unread = r.unreadForStylist
+            if (unread > 0) {
+                tvUnread.visibility = View.VISIBLE
+                tvUnread.text = unread.toString()
+            } else {
+                tvUnread.visibility = View.GONE
             }
 
             when (r.status) {
@@ -93,7 +118,7 @@ class StylingRequestsAdapter(
                 }
             }
 
-            btnChat.setOnClickListener { onChat(docId) }
+            btnChat.setOnClickListener { onChat(item) }
         }
     }
 }

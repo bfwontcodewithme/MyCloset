@@ -4,7 +4,7 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@id/nav_login">
 
-    <!--  Global actions (מכל מקום) -->
+    <!-- Global actions -->
     <action
         android:id="@+id/action_global_login"
         app:destination="@id/nav_login"
@@ -29,7 +29,6 @@
         app:popUpTo="@id/mobile_navigation"
         app:popUpToInclusive="false" />
 
-    <!-- ✅ NEW: global chat -->
     <action
         android:id="@+id/action_global_chat"
         app:destination="@id/nav_chat" />
@@ -85,7 +84,7 @@
 
         <action
             android:id="@+id/action_nav_home_to_nav_closet"
-            app:destination="@id/nav_closet" />
+            app:destination="@id/nav_closet_list" />
 
         <action
             android:id="@+id/action_nav_home_to_nav_profile"
@@ -95,13 +94,24 @@
             android:id="@+id/action_nav_home_to_nav_add_item"
             app:destination="@id/nav_add_item" />
 
+        <!-- Outfits -> Outfit List -->
         <action
-            android:id="@+id/action_nav_home_to_nav_create_outfit"
-            app:destination="@id/nav_create_outfit" />
+            android:id="@+id/action_nav_home_to_nav_outfit_list"
+            app:destination="@id/nav_outfit_list" />
 
         <action
             android:id="@+id/action_nav_home_to_nav_stylist_list"
             app:destination="@id/nav_stylist_list" />
+
+        <action
+            android:id="@+id/action_nav_home_to_nav_suggestions_inbox_all"
+            app:destination="@id/nav_suggestions_inbox_all" />
+
+
+        <!-- Friends -->
+        <action
+            android:id="@+id/action_nav_home_to_nav_friends"
+            app:destination="@id/nav_friends" />
     </fragment>
 
     <!-- Stylist List -->
@@ -122,16 +132,47 @@
         android:name="com.example.mycloset.ui.profile.ProfileFragment"
         android:label="My Profile" />
 
+    <!-- Settings -->
     <fragment
         android:id="@+id/nav_settings"
         android:name="com.example.mycloset.ui.main.SettingsFragment"
         android:label="Settings" />
+
+    <!-- Friends -->
+    <fragment
+        android:id="@+id/nav_friends"
+        android:name="com.example.mycloset.ui.friends.FriendsFragment"
+        android:label="Friends" />
+
+    <!-- Closet List -->
+    <fragment
+        android:id="@+id/nav_closet_list"
+        android:name="com.example.mycloset.ui.closet.ClosetListFragment"
+        android:label="My Closets">
+
+        <action
+            android:id="@+id/action_nav_closet_list_to_nav_closet"
+            app:destination="@id/nav_closet" />
+    </fragment>
 
     <!-- Closet -->
     <fragment
         android:id="@+id/nav_closet"
         android:name="com.example.mycloset.ui.closet.ClosetFragment"
         android:label="Closet">
+
+        <argument
+            android:name="closetId"
+            app:argType="string" />
+
+        <argument
+            android:name="closetName"
+            app:argType="string"
+            android:defaultValue="" />
+
+        <action
+            android:id="@+id/action_nav_closet_to_nav_items_list"
+            app:destination="@id/nav_items_list" />
 
         <action
             android:id="@+id/action_nav_closet_to_nav_add_item"
@@ -140,13 +181,44 @@
         <action
             android:id="@+id/action_nav_closet_to_nav_create_outfit"
             app:destination="@id/nav_create_outfit" />
+
+        <!-- Share Closet Access -->
+        <action
+            android:id="@+id/action_nav_closet_to_nav_share_access"
+            app:destination="@id/nav_share_access" />
+    </fragment>
+
+    <!-- Items List (inside closet) -->
+    <fragment
+        android:id="@+id/nav_items_list"
+        android:name="com.example.mycloset.ui.item.ItemListFragment"
+        android:label="Items">
+
+        <argument
+            android:name="closetId"
+            app:argType="string" />
+
+        <argument
+            android:name="closetName"
+            app:argType="string"
+            android:defaultValue="" />
+
+        <action
+            android:id="@+id/action_nav_items_list_to_nav_item_details"
+            app:destination="@id/nav_item_details" />
     </fragment>
 
     <!-- Add Item -->
     <fragment
         android:id="@+id/nav_add_item"
         android:name="com.example.mycloset.ui.item.AddItemFragment"
-        android:label="Add Item" />
+        android:label="Add Item">
+
+        <argument
+            android:name="closetId"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
 
     <!-- Create Outfit -->
     <fragment
@@ -154,13 +226,55 @@
         android:name="com.example.mycloset.ui.outfit.CreateOutfitFragment"
         android:label="Create Outfit" />
 
+    <!-- Outfit List -->
+    <fragment
+        android:id="@+id/nav_outfit_list"
+        android:name="com.example.mycloset.ui.outfit.OutfitListFragment"
+        android:label="My Outfits" />
+
+    <!-- Outfit Details -->
+    <fragment
+        android:id="@+id/nav_outfit_details"
+        android:name="com.example.mycloset.ui.outfit.OutfitDetailsFragment"
+        android:label="Outfit Details">
+
+        <argument
+            android:name="outfitId"
+            app:argType="string" />
+    </fragment>
+
+    <!-- Share Access (ONLY ONCE) -->
+    <fragment
+        android:id="@+id/nav_share_access"
+        android:name="com.example.mycloset.ui.share.ShareAccessFragment"
+        android:label="Share Access">
+
+        <argument
+            android:name="resourceType"
+            app:argType="string" />
+
+        <argument
+            android:name="resourceId"
+            app:argType="string" />
+
+        <action
+            android:id="@+id/action_shareAccess_to_pickFriend"
+            app:destination="@id/nav_pick_friend" />
+    </fragment>
+
+    <!-- Pick Friend (ONLY ONCE) -->
+    <fragment
+        android:id="@+id/nav_pick_friend"
+        android:name="com.example.mycloset.ui.friends.PickFriendFragment"
+        android:label="Pick Friend" />
+
     <!-- My Requests -->
     <fragment
         android:id="@+id/nav_my_requests"
         android:name="com.example.mycloset.ui.requests.MyRequestsFragment"
         android:label="My Requests" />
 
-    <!--  Chat Screen + argument -->
+    <!-- Chat -->
     <fragment
         android:id="@+id/nav_chat"
         android:name="com.example.mycloset.ui.chat.ChatFragment"
@@ -170,6 +284,140 @@
             android:name="requestId"
             app:argType="string" />
     </fragment>
+
+    <!-- Item Details -->
+    <fragment
+        android:id="@+id/nav_item_details"
+        android:name="com.example.mycloset.ui.item.ItemDetailsFragment"
+        android:label="Item Details">
+
+        <argument
+            android:name="itemId"
+            app:argType="string" />
+
+        <argument
+            android:name="closetId"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
+
+    <!-- Friend Suggest Outfit -->
+    <fragment
+        android:id="@+id/nav_friend_suggest_outfit"
+        android:name="com.example.mycloset.ui.outfit.FriendSuggestOutfitFragment"
+        android:label="Suggest Outfit">
+        <argument android:name="ownerUid" app:argType="string" />
+        <argument android:name="outfitId" app:argType="string" />
+    </fragment>
+
+    <!-- Suggestions Inbox (Owner) -->
+    <fragment
+        android:id="@+id/nav_suggestions_inbox"
+        android:name="com.example.mycloset.ui.outfit.SuggestionsInboxFragment"
+        android:label="Suggestions Inbox">
+        <argument android:name="outfitId" app:argType="string" />
+    </fragment>
+
+    <!-- Shared With Me -->
+    <fragment
+        android:id="@+id/nav_shared_outfits"
+        android:name="com.example.mycloset.ui.shared.SharedOutfitsFragment"
+        android:label="Shared With Me" />
+
+    <fragment
+        android:id="@+id/nav_shared_outfit_details"
+        android:name="com.example.mycloset.ui.shared.SharedOutfitDetailsFragment"
+        android:label="Shared Outfit Details">
+
+        <argument
+            android:name="ownerUid"
+            app:argType="string" />
+
+        <argument
+            android:name="outfitId"
+            app:argType="string" />
+    </fragment>
+
+    <!-- Suggestion Details (ADDED) -->
+    <fragment
+        android:id="@+id/nav_suggestion_details"
+        android:name="com.example.mycloset.ui.suggestions.SuggestionDetailsFragment"
+        android:label="Suggestion Details">
+        <argument android:name="ownerUid" app:argType="string" />
+        <argument android:name="outfitId" app:argType="string" />
+        <argument android:name="suggestionId" app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/nav_manage_access"
+        android:name="com.example.mycloset.ui.share.ManageAccessFragment"
+        android:label="Manage Access">
+        <argument android:name="resourceType" app:argType="string"/>
+        <argument android:name="resourceId" app:argType="string"/>
+    </fragment>
+
+    <!-- Suggestions Inbox (All outfits) -->
+    <fragment
+        android:id="@+id/nav_suggestions_inbox_all"
+        android:name="com.example.mycloset.ui.outfit.SuggestionsInboxAllFragment"
+        android:label="All Suggestions" />
+
+    <!-- Send Suggestion (Friend) -->
+    <fragment
+        android:id="@+id/nav_send_suggestion"
+        android:name="com.example.mycloset.ui.outfit.SendSuggestionFragment"
+        android:label="Send Suggestion">
+
+        <argument
+            android:name="ownerUid"
+            app:argType="string" />
+
+        <argument
+            android:name="outfitId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_support"
+        android:name="com.example.mycloset.ui.support.SupportFragment"
+        android:label="Support" />
+
+    <!-- Pick Items To Share (CLOSET -> choose items subset) -->
+    <fragment
+        android:id="@+id/nav_pick_items_to_share"
+        android:name="com.example.mycloset.ui.share.PickItemsToShareFragment"
+        android:label="Pick Items To Share">
+
+        <argument
+            android:name="closetId"
+            app:argType="string" />
+
+        <argument
+            android:name="friendUid"
+            app:argType="string" />
+
+        <argument
+            android:name="friendLabel"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
+    <!-- Shared Closets -->
+    <fragment
+        android:id="@+id/nav_shared_closets"
+        android:name="com.example.mycloset.ui.shared.SharedClosetsFragment"
+        android:label="Shared Closets" />
+
+    <!-- Shared Closet Details -->
+    <fragment
+        android:id="@+id/nav_shared_closet_details"
+        android:name="com.example.mycloset.ui.shared.SharedClosetDetailsFragment"
+        android:label="Shared Closet Details">
+        <argument android:name="ownerUid" app:argType="string" />
+        <argument android:name="closetId" app:argType="string" />
+    </fragment>
+
+
+
+
 
 
 

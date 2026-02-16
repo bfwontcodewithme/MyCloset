@@ -2,10 +2,12 @@ package com.example.mycloset.ui.requests
 
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mycloset.R
@@ -23,10 +25,18 @@ class MyRequestsFragment : Fragment(R.layout.fragment_my_requests) {
     private lateinit var tvEmpty: TextView
     private lateinit var adapter: MyRequestsAdapter
 
+    // ✅ NEW: filter buttons
+    private lateinit var btnActive: Button
+    private lateinit var btnHistory: Button
+
     private var reg: ListenerRegistration? = null
 
     // cache: stylistId -> email
     private val stylistEmailCache = mutableMapOf<String, String>()
+
+    // ✅ NEW: keep full list and filter on UI
+    private var allUi: List<MyRequestUI> = emptyList()
+    private var currentFilter: String = "ACTIVE" // "ACTIVE" / "HISTORY"
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -34,12 +44,31 @@ class MyRequestsFragment : Fragment(R.layout.fragment_my_requests) {
         rv = view.findViewById(R.id.rvMyRequests)
         tvEmpty = view.findViewById(R.id.tvEmptyMyRequests)
 
-        adapter = MyRequestsAdapter { item ->
-            confirmCancel(item)
-        }
+        btnActive = view.findViewById(R.id.btnMyReqActive)
+        btnHistory = view.findViewById(R.id.btnMyReqHistory)
+
+        adapter = MyRequestsAdapter(
+            onCancel = { item -> confirmCancel(item) },
+            onOpenChat = { item -> openChat(item.docId) }
+        )
 
         rv.layoutManager = LinearLayoutManager(requireContext())
         rv.adapter = adapter
+
+        // default
+        setSelectedFilterUI()
+
+        btnActive.setOnClickListener {
+            currentFilter = "ACTIVE"
+            setSelectedFilterUI()
+            applyFilterAndRender()
+        }
+
+        btnHistory.setOnClickListener {
+            currentFilter = "HISTORY"
+            setSelectedFilterUI()
+            applyFilterAndRender()
+        }
 
         listenToMyRequests()
     }
@@ -80,27 +109,61 @@ class MyRequestsFragment : Fragment(R.layout.fragment_my_requests) {
                     doc.id to r
                 }
 
-                val stylistIds = raw.map { it.second.stylistId }.filter { it.isNotBlank() }.distinct()
+                val stylistIds = raw.map { it.second.stylistId }
+                    .filter { it.isNotBlank() }
+                    .distinct()
+
                 fetchStylistEmailsIfNeeded(stylistIds) {
                     val uiList = raw.map { (docId, r) ->
                         MyRequestUI(
-                            docId = docId,
+                            docId = docId, // ✅ requestId for chat
                             stylistId = r.stylistId,
                             stylistEmail = stylistEmailCache[r.stylistId].orEmpty(),
                             status = r.status,
                             note = r.note,
-                            createdAt = r.createdAt
+                            createdAt = r.createdAt,
+
+                            // ✅ IMPORTANT: map chat summary + unread too
+                            lastMessage = r.lastMessage,
+                            lastMessageAt = r.lastMessageAt,
+                            lastSenderId = r.lastSenderId,
+                            unreadForUser = r.unreadForUser,
+                            unreadForStylist = r.unreadForStylist
                         )
                     }
 
-                    adapter.submitList(uiList)
-
-                    val empty = uiList.isEmpty()
-                    rv.visibility = if (empty) View.GONE else View.VISIBLE
-                    tvEmpty.visibility = if (empty) View.VISIBLE else View.GONE
-                    if (empty) tvEmpty.text = "No requests yet"
+                    allUi = uiList
+                    applyFilterAndRender()
                 }
             }
+    }
+
+    private fun applyFilterAndRender() {
+        val filtered = when (currentFilter) {
+            "ACTIVE" -> allUi.filter { it.status == "OPEN" || it.status == "IN_PROGRESS" }
+            "HISTORY" -> allUi.filter { it.status == "DONE" || it.status == "CANCELLED" }
+            else -> allUi
+        }
+
+        adapter.submitList(filtered)
+
+        val empty = filtered.isEmpty()
+        rv.visibility = if (empty) View.GONE else View.VISIBLE
+        tvEmpty.visibility = if (empty) View.VISIBLE else View.GONE
+
+        if (empty) {
+            tvEmpty.text = when (currentFilter) {
+                "ACTIVE" -> "No active requests"
+                "HISTORY" -> "No past requests"
+                else -> "No requests"
+            }
+        }
+    }
+
+    private fun setSelectedFilterUI() {
+        // optional UI feedback without changing styles.xml:
+        btnActive.isEnabled = currentFilter != "ACTIVE"
+        btnHistory.isEnabled = currentFilter != "HISTORY"
     }
 
     private fun fetchStylistEmailsIfNeeded(stylistIds: List<String>, onDone: () -> Unit) {
@@ -126,22 +189,33 @@ class MyRequestsFragment : Fragment(R.layout.fragment_my_requests) {
         }
     }
 
+    private fun openChat(requestId: String) {
+        val args = Bundle().apply {
+            putString("requestId", requestId)
+        }
+        findNavController().navigate(R.id.nav_chat, args)
+    }
+
     private fun confirmCancel(item: MyRequestUI) {
         AlertDialog.Builder(requireContext())
             .setTitle("Cancel request?")
             .setMessage("Are you sure you want to cancel this request?\nThis cannot be undone.")
             .setPositiveButton("Yes, cancel") { _, _ ->
-                deleteRequest(item.docId)
+                cancelRequest(item.docId)
             }
             .setNegativeButton("No", null)
             .show()
     }
 
-    private fun deleteRequest(docId: String) {
+    private fun cancelRequest(docId: String) {
         db.collection("styling_requests")
             .document(docId)
-            .delete()
-            .addOnSuccessListener { toast("Request cancelled ✅") }
+            .update("status", "CANCELLED")
+            .addOnSuccessListener {
+                toast("Request cancelled ✅")
+                // optional: switch to history so user sees it moved
+                // currentFilter = "HISTORY"; setSelectedFilterUI(); applyFilterAndRender()
+            }
             .addOnFailureListener { e -> toast("Failed: ${e.message}") }
     }
 

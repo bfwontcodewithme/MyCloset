@@ -39,6 +39,13 @@
         <item name="cornerRadius">@dimen/radius_m</item>
         <item name="android:minHeight">52dp</item>
     </style>
+    <!-- ===== NAV HEADER (Circle Image) ===== -->
+    <style name="CircleImage">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+
 
 
 </resources>

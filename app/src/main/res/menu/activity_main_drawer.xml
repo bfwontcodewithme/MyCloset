@@ -1,43 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:showIn="navigation_view">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:id="@+id/group_always">
         <item
             android:id="@+id/nav_home"
-            android:icon="@drawable/ic_menu_home"
+            android:icon="@android:drawable/ic_menu_view"
             android:title="Home" />
+
         <item
             android:id="@+id/nav_settings"
-            android:icon="@drawable/ic_menu_settings"
+            android:icon="@android:drawable/ic_menu_preferences"
             android:title="Settings" />
     </group>
 
     <group android:id="@+id/group_logged_out">
         <item
             android:id="@+id/nav_login"
-            android:icon="@drawable/ic_menu_login"
+            android:icon="@android:drawable/ic_lock_lock"
             android:title="Sign In" />
     </group>
 
     <group android:id="@+id/group_logged_in">
+        <item
+            android:id="@+id/nav_closet_list"
+            android:icon="@android:drawable/ic_menu_agenda"
+            android:title="My Closets" />
+
+        <item
+            android:id="@+id/nav_outfit_list"
+            android:icon="@android:drawable/ic_menu_gallery"
+            android:title="My Outfits" />
 
         <item
             android:id="@+id/nav_profile"
-            android:icon="@drawable/ic_menu_profile"
+            android:icon="@android:drawable/ic_menu_myplaces"
             android:title="My Profile" />
 
-        <!-- ✅ NEW -->
         <item
             android:id="@+id/nav_my_requests"
-            android:icon="@drawable/ic_menu_home"
+            android:icon="@android:drawable/ic_menu_send"
             android:title="My Requests" />
 
-        <!-- זה לא יעד ניווט אמיתי, נטפל בזה בקוד -->
         <item
             android:id="@+id/nav_logout"
-            android:icon="@drawable/ic_menu_logout"
+            android:icon="@android:drawable/ic_lock_power_off"
             android:title="Log Out" />
     </group>
 

@@ -15,7 +15,8 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 class MyRequestsAdapter(
-    private val onCancel: (MyRequestUI) -> Unit
+    private val onCancel: (MyRequestUI) -> Unit,
+    private val onOpenChat: (MyRequestUI) -> Unit
 ) : ListAdapter<MyRequestUI, MyRequestsAdapter.VH>(Diff) {
 
     object Diff : DiffUtil.ItemCallback<MyRequestUI>() {
@@ -33,7 +34,7 @@ class MyRequestsAdapter(
     }
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        holder.bind(getItem(position), onCancel)
+        holder.bind(getItem(position), onCancel, onOpenChat)
     }
 
     class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -43,15 +44,22 @@ class MyRequestsAdapter(
         private val tvNote: TextView = itemView.findViewById(R.id.tvMyReqNote)
         private val tvStylist: TextView = itemView.findViewById(R.id.tvMyReqStylist)
 
-        private val btnCancel: Button = itemView.findViewById(R.id.btnCancelRequest)
+        // ✅ new
+        private val tvLastMessage: TextView = itemView.findViewById(R.id.tvMyReqLastMessage)
+        private val tvLastTime: TextView = itemView.findViewById(R.id.tvMyReqLastTime)
+        private val tvUnread: TextView = itemView.findViewById(R.id.tvMyReqUnread)
 
-        // ✅ חשוב: ב-item_my_request.xml צריך להיות כפתור עם id הזה
+        private val btnCancel: Button = itemView.findViewById(R.id.btnCancelRequest)
         private val btnChat: Button = itemView.findViewById(R.id.btnOpenChat)
 
         private val fmt = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        private val fmtTime = SimpleDateFormat("HH:mm", Locale.getDefault())
 
-        fun bind(r: MyRequestUI, onCancel: (MyRequestUI) -> Unit) {
-
+        fun bind(
+            r: MyRequestUI,
+            onCancel: (MyRequestUI) -> Unit,
+            onOpenChat: (MyRequestUI) -> Unit
+        ) {
             tvStatus.text = "Status: ${r.status}"
 
             val dateText = r.createdAt?.toDate()?.let { fmt.format(it) } ?: "-"
@@ -61,6 +69,24 @@ class MyRequestsAdapter(
 
             val stylistText = if (r.stylistEmail.isBlank()) "(unknown stylist)" else r.stylistEmail
             tvStylist.text = "Stylist: $stylistText"
+
+            // ✅ last message preview (צריך שיהיה ב-MyRequestUI)
+            tvLastMessage.text = if (r.lastMessage.isBlank()) "(no messages yet)" else r.lastMessage
+            val t = r.lastMessageAt?.toDate()
+            if (t == null) {
+                tvLastTime.visibility = View.GONE
+            } else {
+                tvLastTime.visibility = View.VISIBLE
+                tvLastTime.text = fmtTime.format(t)
+            }
+
+            // ✅ unread for user
+            if (r.unreadForUser > 0) {
+                tvUnread.visibility = View.VISIBLE
+                tvUnread.text = r.unreadForUser.toString()
+            } else {
+                tvUnread.visibility = View.GONE
+            }
 
             // Cancel only when OPEN
             if (r.status == "OPEN") {
@@ -72,16 +98,7 @@ class MyRequestsAdapter(
                 btnCancel.setOnClickListener(null)
             }
 
-            // ✅ Chat
-            btnChat.setOnClickListener {
-                val b = Bundle().apply {
-                    putString("requestId", r.docId) // docId של הבקשה
-                }
-
-                Navigation.findNavController(itemView)
-                    .navigate(R.id.nav_chat, b)
-
-            }
+            btnChat.setOnClickListener { onOpenChat(r) }
         }
     }
 }

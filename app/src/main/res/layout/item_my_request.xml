@@ -14,13 +14,38 @@
         android:orientation="vertical"
         android:padding="14dp">
 
-        <TextView
-            android:id="@+id/tvMyReqStatus"
-            android:layout_width="wrap_content"
+        <!-- Header row: status + unread badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Status: OPEN"
-            android:textStyle="bold"
-            android:textSize="16sp"/>
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvMyReqStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Status: OPEN"
+                android:textStyle="bold"
+                android:textSize="16sp"/>
+
+            <!-- ✅ Unread badge (for user) -->
+            <TextView
+                android:id="@+id/tvMyReqUnread"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:text="2"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:textColor="@android:color/white"
+                android:background="@android:color/holo_red_dark"
+                android:visibility="gone"/>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvMyReqDate"
@@ -43,7 +68,36 @@
             android:layout_marginTop="6dp"
             android:text="Stylist: -"/>
 
-        <!--  Cancel button (only for OPEN) -->
+        <!-- ✅ Last message row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvMyReqLastMessage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Last message preview..."
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textColor="#666666" />
+
+            <TextView
+                android:id="@+id/tvMyReqLastTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12:30"
+                android:textColor="#666666"
+                android:textSize="12sp"
+                android:layout_marginStart="10dp"
+                android:visibility="gone"/>
+        </LinearLayout>
+
+        <!-- Cancel button (only for OPEN) -->
         <Button
             android:id="@+id/btnCancelRequest"
             android:layout_width="wrap_content"
@@ -58,7 +112,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Chat" />
-
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

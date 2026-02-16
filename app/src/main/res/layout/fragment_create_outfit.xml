@@ -25,7 +25,6 @@
             android:hint="Outfit name (e.g., Work Look)"
             android:layout_marginBottom="10dp"/>
 
-        <!-- ✅ Season for Smart Suggest -->
         <Spinner
             android:id="@+id/spSeason"
             android:layout_width="match_parent"
@@ -51,15 +50,25 @@
             android:layout_width="match_parent"
             android:layout_height="350dp" />
 
-        <!-- ✅ NEW: Suggest button -->
+        <!-- ✅ Suggest by Stats -->
         <Button
-            android:id="@+id/btnSuggest"
+            android:id="@+id/btnSuggestStats"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Suggest Outfit (AI)"
-            android:backgroundTint="#EC407A"
+            android:text="Suggest (Stats)"
+            android:backgroundTint="#8E24AA"
             android:textColor="#FFFFFF"
             android:layout_marginTop="12dp"/>
+
+        <!-- ✅ Suggest by AI -->
+        <Button
+            android:id="@+id/btnSuggestAI"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Suggest (AI)"
+            android:backgroundTint="#EC407A"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="10dp"/>
 
         <Button
             android:id="@+id/btnSaveOutfit"

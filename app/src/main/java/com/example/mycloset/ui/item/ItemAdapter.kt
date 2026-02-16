@@ -3,6 +3,8 @@ package com.example.mycloset.ui.item
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
+import android.widget.PopupMenu
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -12,13 +14,15 @@ import com.example.mycloset.data.model.Item
 
 class ItemAdapter(
     private val items: MutableList<Item>,
-    private val onClick: (Item) -> Unit = {}
+    private val onClick: (Item) -> Unit = {},
+    private val onDelete: (Item) -> Unit = {}
 ) : RecyclerView.Adapter<ItemAdapter.VH>() {
 
     class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvName: TextView = itemView.findViewById(R.id.tvItemName)
         val tvMeta: TextView = itemView.findViewById(R.id.tvItemMeta)
         val img: ImageView = itemView.findViewById(R.id.ivItem)
+        val menuBtn: ImageButton = itemView.findViewById(R.id.btnItemMenu)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
@@ -39,6 +43,18 @@ class ItemAdapter(
         }
 
         holder.itemView.setOnClickListener { onClick(item) }
+
+        holder.menuBtn.setOnClickListener { anchor ->
+            val popup = PopupMenu(anchor.context, anchor)
+            popup.menu.add("Delete")
+            popup.setOnMenuItemClickListener { menuItem ->
+                if (menuItem.title.toString() == "Delete") {
+                    onDelete(item)
+                }
+                true
+            }
+            popup.show()
+        }
     }
 
     override fun getItemCount(): Int = items.size
