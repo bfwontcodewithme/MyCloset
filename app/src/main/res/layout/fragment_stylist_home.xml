@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:padding="20dp">
 
-    <!-- Title -->
     <TextView
         android:id="@+id/tvStylistTitle"
         android:layout_width="wrap_content"
@@ -18,7 +17,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Update Location -->
     <Button
         android:id="@+id/btnUpdateLocation"
         android:layout_width="0dp"
@@ -29,7 +27,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Logout -->
     <Button
         android:id="@+id/btnStylistLogout"
         android:layout_width="0dp"
@@ -81,9 +78,17 @@
             android:layout_weight="1"
             android:layout_marginStart="8dp"
             android:text="Done" />
+
+        <!-- ✅ NEW -->
+        <Button
+            android:id="@+id/btnFilterCancelled"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Cancelled" />
     </LinearLayout>
 
-    <!-- Status / Empty -->
     <TextView
         android:id="@+id/tvEmptyRequests"
         android:layout_width="0dp"
@@ -97,7 +102,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Requests List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvStylingRequests"
         android:layout_width="0dp"

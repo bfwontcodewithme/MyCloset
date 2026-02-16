@@ -6,4 +6,8 @@
     <string name="items_list">Items</string>
     <string name="no_items_yet">No items yet</string>
     <string name="item_image_desc">Item image</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
 </resources>

@@ -1,58 +1,97 @@
-// ui/home/HomeFragment.kt
 package com.example.mycloset.ui.home
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.mycloset.R
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.textview.MaterialTextView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
-class MainHomeFragment : Fragment(R.layout.fragment_home) {
+class HomeFragment : Fragment(R.layout.fragment_home) {
 
+    private val db by lazy { FirebaseFirestore.getInstance() }
     private val auth by lazy { FirebaseAuth.getInstance() }
+
+    private lateinit var tvSuggestionsSubtitle: MaterialTextView
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val btnGoClosets = view.findViewById<Button>(R.id.btnGoClosets)
-        val btnGoOutfits = view.findViewById<Button>(R.id.btnGoOutfits)
-        val btnAddItem = view.findViewById<Button>(R.id.btnAddItem)
-        val btnMyItems = view.findViewById<Button>(R.id.btnMyItems)
-        val btnRequestStylist = view.findViewById<Button>(R.id.btnRequestStylist)
-        val btnMyRequests = view.findViewById<Button>(R.id.btnMyRequests)
-        val btnLogout = view.findViewById<Button>(R.id.btnLogout)
+        tvSuggestionsSubtitle = view.findViewById(R.id.tvSuggestionsSubtitle)
 
-        btnGoClosets.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_home_to_nav_closet)
+        view.findViewById<MaterialCardView>(R.id.cardClosets)
+            .setOnClickListener { findNavController().navigate(R.id.nav_closet_list) }
+
+        view.findViewById<MaterialCardView>(R.id.cardOutfits)
+            .setOnClickListener { findNavController().navigate(R.id.nav_outfit_list) }
+
+        view.findViewById<MaterialCardView>(R.id.cardAddItem)
+            .setOnClickListener { findNavController().navigate(R.id.nav_add_item) }
+
+        // TODO: אם יהיה מסך My Items ייעודי, לשנות אליו
+        view.findViewById<MaterialCardView>(R.id.cardMyItems)
+            .setOnClickListener { findNavController().navigate(R.id.nav_closet_list) }
+
+        view.findViewById<MaterialCardView>(R.id.cardRequestStylist)
+            .setOnClickListener { findNavController().navigate(R.id.nav_stylist_list) }
+
+        view.findViewById<MaterialCardView>(R.id.cardMyRequests)
+            .setOnClickListener { findNavController().navigate(R.id.nav_my_requests) }
+
+        view.findViewById<MaterialCardView>(R.id.cardSharedWithMe)
+            .setOnClickListener { findNavController().navigate(R.id.nav_shared_outfits) }
+
+        view.findViewById<MaterialCardView>(R.id.cardSuggestions)
+            .setOnClickListener { findNavController().navigate(R.id.nav_suggestions_inbox_all) }
+
+        view.findViewById<MaterialCardView>(R.id.cardSupport)
+            .setOnClickListener { findNavController().navigate(R.id.nav_support) }
+
+        view.findViewById<MaterialButton>(R.id.btnLogout)
+            .setOnClickListener { logout() }
+
+        updateSuggestionsSubtitle()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateSuggestionsSubtitle()
+    }
+
+    private fun logout() {
+        auth.signOut()
+        findNavController().navigate(R.id.action_global_login)
+    }
+
+    private fun updateSuggestionsSubtitle() {
+        val myUid = auth.currentUser?.uid ?: run {
+            tvSuggestionsSubtitle.text = "No pending"
+            return
         }
 
-        // ✅ Outfits הולך לרשימת Outfits (לא ל-Create)
-        btnGoOutfits.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_home_to_nav_outfit_list)
-        }
+        lifecycleScope.launch {
+            tvSuggestionsSubtitle.text = "Loading..."
+            try {
+                val suggestionsSnap = db.collection("outfit_suggestions")
+                    .whereEqualTo("ownerUid", myUid)
+                    .whereEqualTo("status", "PENDING")
+                    .get()
+                    .await()
 
-        btnAddItem.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_home_to_nav_add_item)
-        }
+                val totalPending = suggestionsSnap.size()
+                tvSuggestionsSubtitle.text =
+                    if (totalPending > 0) "$totalPending pending" else "No pending"
 
-
-        btnMyItems.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_home_to_nav_closet)
-        }
-
-        btnRequestStylist.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_home_to_nav_stylist_list)
-        }
-
-        btnMyRequests.setOnClickListener {
-            findNavController().navigate(R.id.nav_my_requests)
-        }
-
-        btnLogout.setOnClickListener {
-            auth.signOut()
-            findNavController().navigate(R.id.action_global_login)
+            } catch (_: Exception) {
+                tvSuggestionsSubtitle.text = "No pending"
+            }
         }
     }
 }

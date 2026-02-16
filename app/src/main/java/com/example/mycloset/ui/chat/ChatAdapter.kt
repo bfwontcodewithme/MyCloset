@@ -15,23 +15,15 @@ class ChatAdapter(
     private val myUid: String
 ) : ListAdapter<ChatMessage, ChatAdapter.VH>(Diff) {
 
-    object Diff : DiffUtil.ItemCallback<ChatMessage>() {
+    companion object {
+        private val Diff = object : DiffUtil.ItemCallback<ChatMessage>() {
+            override fun areItemsTheSame(oldItem: ChatMessage, newItem: ChatMessage): Boolean {
+                return oldItem.id == newItem.id
+            }
 
-        override fun areItemsTheSame(
-            oldItem: ChatMessage,
-            newItem: ChatMessage
-        ): Boolean {
-            // מספיק לצ'אט פשוט
-            return oldItem.text == newItem.text &&
-                    oldItem.senderId == newItem.senderId &&
-                    oldItem.createdAt == newItem.createdAt
-        }
-
-        override fun areContentsTheSame(
-            oldItem: ChatMessage,
-            newItem: ChatMessage
-        ): Boolean {
-            return oldItem == newItem
+            override fun areContentsTheSame(oldItem: ChatMessage, newItem: ChatMessage): Boolean {
+                return oldItem == newItem
+            }
         }
     }
 
@@ -47,39 +39,20 @@ class ChatAdapter(
 
     class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-        private val tvSender: TextView =
-            itemView.findViewById(R.id.tvMsgSender)
+        private val tvSender: TextView = itemView.findViewById(R.id.tvMsgSender)
+        private val tvText: TextView = itemView.findViewById(R.id.tvMsgText)
+        private val tvTime: TextView = itemView.findViewById(R.id.tvMsgTime)
 
-        private val tvText: TextView =
-            itemView.findViewById(R.id.tvMsgText)
-
-        private val tvTime: TextView =
-            itemView.findViewById(R.id.tvMsgTime)
-
-        private val fmt =
-            SimpleDateFormat("HH:mm", Locale.getDefault())
+        private val fmt = SimpleDateFormat("HH:mm", Locale.getDefault())
 
         fun bind(m: ChatMessage, myUid: String) {
-
             val isMe = m.senderId == myUid
 
-            // מי שלח
-            tvSender.text =
-                if (isMe) "Me" else m.senderRole.ifBlank { "Other" }
-
-            // תוכן
+            tvSender.text = if (isMe) "Me" else (m.senderRole.ifBlank { "Other" })
             tvText.text = m.text
+            tvTime.text = m.createdAt?.toDate()?.let { fmt.format(it) } ?: ""
 
-            // שעה
-            tvTime.text =
-                m.createdAt?.toDate()?.let { fmt.format(it) } ?: ""
-
-            // רקע פשוט לפי צד
-            val bg = if (isMe)
-                R.drawable.bg_chat_me
-            else
-                R.drawable.bg_chat_other
-
+            val bg = if (isMe) R.drawable.bg_chat_me else R.drawable.bg_chat_other
             itemView.setBackgroundResource(bg)
         }
     }

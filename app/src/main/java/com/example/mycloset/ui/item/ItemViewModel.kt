@@ -5,30 +5,28 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mycloset.data.model.Item
-import com.example.mycloset.util.Injection // switch for test
+import com.example.mycloset.util.Injection
 import kotlinx.coroutines.launch
 
 class ItemViewModel : ViewModel() {
 
-    private val repository = Injection.provideItemRepository()
+    private val repository = Injection.provideItemsRepository()
 
-    // fragment will "watch" (observe) this.
     private val _items = MutableLiveData<List<Item>>()
     val items: LiveData<List<Item>> = _items
 
-    // starts the data fetch.
-    fun loadItems(userId: String) {
+    fun loadItemsForCloset(userId: String, closetId: String) {
         viewModelScope.launch {
-            try {
-                // getting items from the repository
-                val result = repository.getMyItems(userId)
+            _items.value = runCatching {
+                repository.getItemsByCloset(userId, closetId)
+            }.getOrElse { emptyList() }
+        }
+    }
 
-                // Update the LiveData with the result
-                // This triggers the Fragment to call adapter.setData()
-                _items.value = result
-            } catch (e: Exception) {
-                // Handle errors here if needed
-            }
+    fun deleteItem(userId: String, itemId: String, closetId: String) {
+        viewModelScope.launch {
+            runCatching { repository.deleteItem(userId, itemId) }
+            loadItemsForCloset(userId, closetId)
         }
     }
 }

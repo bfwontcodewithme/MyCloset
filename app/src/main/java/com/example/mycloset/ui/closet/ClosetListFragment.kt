@@ -3,13 +3,16 @@ package com.example.mycloset.ui.closet
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mycloset.R
+import com.example.mycloset.data.model.Closet
 import com.example.mycloset.data.repository.ClosetsRepository
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
@@ -18,46 +21,129 @@ import kotlinx.coroutines.launch
 class ClosetListFragment : Fragment(R.layout.fragment_closet_list) {
 
     private val repo = ClosetsRepository()
-    private val adapter = ClosetAdapter()
+    private lateinit var adapter: ClosetAdapter
+    private var userId: String? = null
+
+    private var emptyTv: TextView? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val rv = view.findViewById<RecyclerView>(R.id.rvClosets)
-        rv.layoutManager = LinearLayoutManager(requireContext())
-        rv.adapter = adapter
+        emptyTv = view.findViewById(R.id.tvEmptyClosets)
 
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId == null) {
             Toast.makeText(requireContext(), "Please login first", Toast.LENGTH_SHORT).show()
             return
         }
 
-        fun load() {
-            lifecycleScope.launch {
-                val closets = repo.getMyClosets(userId)
-                adapter.submitList(closets)
-            }
-        }
+        adapter = ClosetAdapter(
+            onClick = { openCloset(it) },
+            onRename = { showRenameDialog(it) },
+            onDelete = { confirmDelete(it) }
+        )
+
+        val rv = view.findViewById<RecyclerView>(R.id.rvClosets)
+        rv.layoutManager = LinearLayoutManager(requireContext())
+        rv.adapter = adapter
 
         load()
 
         view.findViewById<FloatingActionButton>(R.id.fabAddCloset).setOnClickListener {
-            val input = EditText(requireContext())
-            input.hint = "Closet name"
-
-            AlertDialog.Builder(requireContext())
-                .setTitle("Add Closet")
-                .setView(input)
-                .setPositiveButton("Add") { _, _ ->
-                    val name = input.text.toString().trim().ifEmpty { "My Closet" }
-                    lifecycleScope.launch {
-                        repo.addCloset(userId, name)
-                        load()
-                    }
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
+            showAddDialog()
         }
+    }
+
+    private fun setEmptyState(isEmpty: Boolean) {
+        emptyTv?.visibility = if (isEmpty) View.VISIBLE else View.GONE
+    }
+
+    private fun load() {
+        val uid = userId ?: return
+        lifecycleScope.launch {
+            runCatching { repo.getMyClosets(uid) }
+                .onSuccess { closets ->
+                    adapter.submitList(closets)
+                    setEmptyState(closets.isEmpty())
+                }
+                .onFailure { e ->
+                    Toast.makeText(requireContext(), "Failed to load closets: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+        }
+    }
+
+    private fun showAddDialog() {
+        val uid = userId ?: return
+        val input = EditText(requireContext()).apply { hint = "Closet name" }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Add Closet")
+            .setView(input)
+            .setPositiveButton("Add") { _, _ ->
+                val name = input.text.toString().trim().ifEmpty { "My Closet" }
+                lifecycleScope.launch {
+                    runCatching { repo.addCloset(uid, name) }
+                        .onSuccess { load() }
+                        .onFailure { e ->
+                            Toast.makeText(requireContext(), "Failed to add closet: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showRenameDialog(closet: Closet) {
+        val uid = userId ?: return
+        val input = EditText(requireContext()).apply { setText(closet.closetName) }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Rename Closet")
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val newName = input.text.toString().trim().ifEmpty { closet.closetName }
+                lifecycleScope.launch {
+                    runCatching { repo.renameCloset(uid, closet.closetId, newName) }
+                        .onSuccess { load() }
+                        .onFailure { e ->
+                            Toast.makeText(requireContext(), "Failed to rename closet: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun confirmDelete(closet: Closet) {
+        val uid = userId ?: return
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete closet?")
+            .setMessage("Are you sure you want to delete '${closet.closetName}'?")
+            .setPositiveButton("Delete") { _, _ ->
+                lifecycleScope.launch {
+                    runCatching { repo.deleteCloset(uid, closet.closetId) }
+                        .onSuccess { load() }
+                        .onFailure { e ->
+                            Toast.makeText(requireContext(), "Failed to delete closet: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun openCloset(closet: Closet) {
+        if (closet.closetId.isBlank()) {
+            Toast.makeText(requireContext(), "Closet ID missing (try reloading)", Toast.LENGTH_SHORT).show()
+            load()
+            return
+        }
+
+        val args = Bundle().apply {
+            putString("closetId", closet.closetId)
+            putString("closetName", closet.closetName)
+        }
+        findNavController().navigate(R.id.action_nav_closet_list_to_nav_closet, args)
     }
 }

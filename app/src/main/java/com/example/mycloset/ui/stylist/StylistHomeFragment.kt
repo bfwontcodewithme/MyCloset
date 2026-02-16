@@ -39,15 +39,13 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
     private lateinit var btnFilterOpen: Button
     private lateinit var btnFilterInProgress: Button
     private lateinit var btnFilterDone: Button
+    private lateinit var btnFilterCancelled: Button // ✅ NEW
 
     private var requestsListener: ListenerRegistration? = null
-
-    // נשמור את כל הבקשות שהגיעו מהשרת
     private var allItems: List<StylingRequestWithId> = emptyList()
 
-    // פילטר נוכחי
     private var currentFilter: String? = null
-    // null = ALL, אחרת "OPEN"/"IN_PROGRESS"/"DONE"
+    // null = ALL, אחרת "OPEN"/"IN_PROGRESS"/"DONE"/"CANCELLED"
 
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { perms ->
@@ -64,11 +62,11 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
         val btnLogout = view.findViewById<Button>(R.id.btnStylistLogout)
         val btnUpdateLocation = view.findViewById<Button>(R.id.btnUpdateLocation)
 
-        // Filters
         btnFilterAll = view.findViewById(R.id.btnFilterAll)
         btnFilterOpen = view.findViewById(R.id.btnFilterOpen)
         btnFilterInProgress = view.findViewById(R.id.btnFilterInProgress)
         btnFilterDone = view.findViewById(R.id.btnFilterDone)
+        btnFilterCancelled = view.findViewById(R.id.btnFilterCancelled) // ✅ NEW
 
         rv = view.findViewById(R.id.rvStylingRequests)
         tvEmpty = view.findViewById(R.id.tvEmptyRequests)
@@ -76,11 +74,7 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
         adapter = StylingRequestsAdapter(
             onAccept = { docId -> updateStatus(docId, "IN_PROGRESS") },
             onDone = { docId -> updateStatus(docId, "DONE") },
-            onChat = { docId ->
-                val b = Bundle().apply { putString("requestId", docId) }
-                // ✅ ניווט ישיר ליעד (לא action_global_chat)
-                findNavController().navigate(R.id.nav_chat, b)
-            }
+            onChat = { item -> openBestChatForItem(item) }
         )
 
         rv.layoutManager = LinearLayoutManager(requireContext())
@@ -96,7 +90,6 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
             else updateMyLocation()
         }
 
-        // Filter clicks
         btnFilterAll.setOnClickListener {
             currentFilter = null
             applyFilterAndRender()
@@ -113,6 +106,10 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
             currentFilter = "DONE"
             applyFilterAndRender()
         }
+        btnFilterCancelled.setOnClickListener { // ✅ NEW
+            currentFilter = "CANCELLED"
+            applyFilterAndRender()
+        }
 
         listenToMyRequestsRealtime()
     }
@@ -123,7 +120,6 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
         requestsListener = null
     }
 
-    // ===== Requests Realtime =====
     private fun listenToMyRequestsRealtime() {
         val myUid = auth.currentUser?.uid ?: run {
             showStatus("Not logged in")
@@ -150,8 +146,14 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
                         StylingRequestWithId(docId = doc.id, req = req)
                     }
 
-                    // sort by status priority
-                    val priority = mapOf("OPEN" to 0, "IN_PROGRESS" to 1, "DONE" to 2)
+                    // ✅ include CANCELLED too (priority)
+                    val priority = mapOf(
+                        "OPEN" to 0,
+                        "IN_PROGRESS" to 1,
+                        "DONE" to 2,
+                        "CANCELLED" to 3
+                    )
+
                     allItems = items.sortedWith(compareBy { priority[it.req.status] ?: 9 })
 
                     applyFilterAndRender()
@@ -172,14 +174,14 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
         tvEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
 
         if (isEmpty) {
-            val label = when (currentFilter) {
+            tvEmpty.text = when (currentFilter) {
                 null -> "No styling requests yet"
                 "OPEN" -> "No OPEN requests"
                 "IN_PROGRESS" -> "No IN_PROGRESS requests"
                 "DONE" -> "No DONE requests"
+                "CANCELLED" -> "No CANCELLED requests"
                 else -> "No requests"
             }
-            tvEmpty.text = label
         }
     }
 
@@ -191,7 +193,40 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
             .addOnFailureListener { e -> toast("Failed: ${e.message}") }
     }
 
-    // ===== Update Location =====
+    private fun openBestChatForItem(item: StylingRequestWithId) {
+        val myUid = auth.currentUser?.uid ?: run {
+            toast("Not logged in")
+            return
+        }
+
+        val fromUserId = item.req.fromUserId
+        if (fromUserId.isBlank()) {
+            val b = Bundle().apply { putString("requestId", item.docId) }
+            findNavController().navigate(R.id.nav_chat, b)
+            return
+        }
+
+        db.collection("styling_requests")
+            .whereEqualTo("stylistId", myUid)
+            .whereEqualTo("fromUserId", fromUserId)
+            .whereIn("status", listOf("OPEN", "IN_PROGRESS"))
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { snap ->
+                val bestId = snap.documents.firstOrNull()?.id
+                val finalId = bestId ?: item.docId
+                val b = Bundle().apply { putString("requestId", finalId) }
+                findNavController().navigate(R.id.nav_chat, b)
+                // ↑ אם אצלך זה עושה בעיה, תחליפי ל:
+                // findNavController().navigate(R.id.nav_chat, b)
+            }
+            .addOnFailureListener {
+                val b = Bundle().apply { putString("requestId", item.docId) }
+                findNavController().navigate(R.id.nav_chat, b)
+            }
+    }
+
     private fun updateMyLocation() {
         val myUid = auth.currentUser?.uid ?: run {
             showStatus("Not logged in")

@@ -1,30 +1,29 @@
 package com.example.mycloset.util
 
-import com.example.mycloset.data.repository.IItemRepository
-import com.example.mycloset.data.repository.ItemsRepository
 import com.example.mycloset.data.remote.firebase.FirebaseItemsDataSource
+import com.example.mycloset.data.repository.ItemsRepository
 
 object Injection {
-    private var repository: IItemRepository? = null
+
+    private var repository: ItemsRepository? = null
 
     /**
-     * This is what the ViewModel calls.
-     * It is just standard Kotlin code—no dependencies needed.
+     * This is what the ViewModel (or anywhere else) can call.
+     * If a test repository was set, it returns it.
      */
-    fun provideItemRepository(): IItemRepository {
-        // Returns the fake if one is set; otherwise, creates the real one
+    fun provideItemsRepository(): ItemsRepository {
         return repository ?: ItemsRepository(FirebaseItemsDataSource())
     }
 
     /**
-     * This is what the UI Test calls to "swap" the data.
+     * Tests can swap the repository here.
      */
-    fun setRepository(repo: IItemRepository) {
+    fun setRepository(repo: ItemsRepository) {
         repository = repo
     }
 
     /**
-     * Call this in @After to clean up for the next test.
+     * Clean up after tests.
      */
     fun reset() {
         repository = null

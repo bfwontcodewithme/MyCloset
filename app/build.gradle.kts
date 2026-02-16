@@ -51,13 +51,16 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.fragment:fragment-ktx:1.8.5")
 
-    // Firebase (explicit versions - fixes "Could not find ... :")
+    // Firebase
     implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
     implementation("com.google.firebase:firebase-firestore-ktx:25.1.1")
     implementation("com.google.firebase:firebase-storage-ktx:21.0.1")
+    implementation("com.google.firebase:firebase-messaging-ktx:24.0.0")
+
+    //   Firebase Functions (Callable)
+    implementation("com.google.firebase:firebase-functions-ktx:21.1.0")
 
     // ViewModel
-    implementation("androidx.fragment:fragment-ktx:1.8.5")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
 
     // Coroutines
@@ -78,9 +81,9 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 
     androidTestImplementation("androidx.test:core:1.5.0")
-    androidTestImplementation ("androidx.test:runner:1.5.0")
-    androidTestImplementation ("androidx.test:rules:1.5.0")
-    androidTestImplementation ("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test:runner:1.5.0")
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
 
     // Coroutines test
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
@@ -90,27 +93,21 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
 
     // Espresso
-    androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation ("androidx.test.espresso:espresso-contrib:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
 
     // debug
-    debugImplementation ("androidx.fragment:fragment-testing:1.6.2")
+    debugImplementation("androidx.fragment:fragment-testing:1.6.2")
+
     // Location (GPS)
     implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation("com.firebase:geofire-android-common:3.2.0")
-
-    implementation("com.google.firebase:firebase-messaging-ktx:24.0.0")
-
-
-
-
-
+    implementation("androidx.gridlayout:gridlayout:1.0.0")
 
 }
+
 configurations.all {
     resolutionStrategy {
-        // This forces a single version of the 'monitor' library
-        // which is the #1 cause of the DirectExecutor error
         force("androidx.test:monitor:1.6.0")
     }
 }

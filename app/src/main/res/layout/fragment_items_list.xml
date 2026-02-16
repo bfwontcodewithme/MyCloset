@@ -6,6 +6,49 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- ✅ Search -->
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/svItems"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:queryHint="Search by name / type / color / tag"
+        app:iconifiedByDefault="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ✅ Filters row -->
+    <LinearLayout
+        android:id="@+id/rowFilters"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        app:layout_constraintTop_toBottomOf="@id/svItems"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Spinner
+            android:id="@+id/spType"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <Spinner
+            android:id="@+id/spColor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"/>
+
+        <Spinner
+            android:id="@+id/spSeason"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
     <ProgressBar
         android:id="@+id/progressItems"
         android:layout_width="wrap_content"
@@ -23,7 +66,7 @@
         android:text="@string/no_items_yet"
         android:visibility="gone"
         android:textSize="16sp"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/rowFilters"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -34,7 +77,7 @@
         android:layout_height="0dp"
         android:contentDescription="@string/items_list"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/rowFilters"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />

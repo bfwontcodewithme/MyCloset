@@ -42,6 +42,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Attach image -->
+    <ImageButton
+        android:id="@+id/btnChatImage"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_menu_camera"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
     <!-- Input -->
     <EditText
         android:id="@+id/etChatMessage"
@@ -49,7 +59,7 @@
         android:layout_height="wrap_content"
         android:hint="Type a message..."
         android:inputType="textMultiLine"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btnChatImage"
         app:layout_constraintEnd_toStartOf="@id/btnChatSend"
         app:layout_constraintBottom_toBottomOf="parent" />
 
