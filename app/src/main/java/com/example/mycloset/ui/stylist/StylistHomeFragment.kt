@@ -247,7 +247,6 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
                         )
                     )
 
-
                     db.collection("users").document(myUid)
                         .set(data, SetOptions.merge())
                         .addOnSuccessListener {
