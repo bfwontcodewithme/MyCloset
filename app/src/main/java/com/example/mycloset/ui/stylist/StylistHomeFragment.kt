@@ -24,25 +24,27 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
-import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
-
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.QuerySnapshot
+import com.google.firebase.firestore.FirebaseFirestoreException
 class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
 
     private val auth by lazy { FirebaseAuth.getInstance() }
     private val db by lazy { FirebaseFirestore.getInstance() }
-    private val fusedClient by lazy { LocationServices.getFusedLocationProviderClient(requireActivity()) }
+
+    //  לא lazy עם requireActivity()
+    private val fusedClient by lazy {
+        LocationServices.getFusedLocationProviderClient(requireContext())
+    }
 
     private lateinit var rv: RecyclerView
-
-    // Empty state in the new layout
     private lateinit var cardEmpty: MaterialCardView
     private lateinit var tvEmpty: TextView
 
     private lateinit var adapter: StylingRequestsAdapter
 
-    // Filters are Chips now
     private lateinit var chipGroup: ChipGroup
     private lateinit var chipAll: Chip
     private lateinit var chipOpen: Chip
@@ -50,12 +52,9 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
     private lateinit var chipDone: Chip
     private lateinit var chipCancelled: Chip
 
-    private var requestsListener: ListenerRegistration? = null
     private var allItems: List<StylingRequestWithId> = emptyList()
-
-    // null = ALL, otherwise "OPEN"/"IN_PROGRESS"/"DONE"/"CANCELLED"
-    private var currentFilter: String? = null
-
+    private var currentFilter: String? = null // null = ALL
+    private var requestsListener: ListenerRegistration? = null
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { perms ->
             val granted = perms[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
@@ -71,7 +70,6 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
         val btnLogout = view.findViewById<MaterialButton>(R.id.btnStylistLogout)
         val btnUpdateLocation = view.findViewById<MaterialButton>(R.id.btnUpdateLocation)
 
-        // Chips
         chipGroup = view.findViewById(R.id.rowFilters)
         chipAll = view.findViewById(R.id.btnFilterAll)
         chipOpen = view.findViewById(R.id.btnFilterOpen)
@@ -102,7 +100,6 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
             else updateMyLocation()
         }
 
-        // Default filter: ALL
         chipAll.isChecked = true
         currentFilter = null
 
@@ -121,12 +118,6 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
         listenToMyRequestsRealtime()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        requestsListener?.remove()
-        requestsListener = null
-    }
-
     private fun listenToMyRequestsRealtime() {
         val myUid = auth.currentUser?.uid ?: run {
             showStatus("Not logged in")
@@ -135,34 +126,36 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
 
         showStatus("Loading requests...")
 
+
         requestsListener?.remove()
-        requestsListener =
-            db.collection("styling_requests")
-                .whereEqualTo("stylistId", myUid)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .addSnapshotListener { snap, err ->
-                    if (err != null) {
-                        showStatus("Failed to load: ${err.message}")
-                        rv.visibility = View.GONE
-                        return@addSnapshotListener
-                    }
+        requestsListener = null
 
-                    val items = snap?.documents.orEmpty().map { doc ->
-                        val req = doc.toObject(StylingRequest::class.java) ?: StylingRequest()
-                        StylingRequestWithId(docId = doc.id, req = req)
-                    }
+        requestsListener = db.collection("styling_requests")
+            .whereEqualTo("stylistId", myUid)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .addSnapshotListener { snap: QuerySnapshot?, err: FirebaseFirestoreException? ->
 
-                    // Priority ordering
-                    val priority = mapOf(
-                        "OPEN" to 0,
-                        "IN_PROGRESS" to 1,
-                        "DONE" to 2,
-                        "CANCELLED" to 3
-                    )
-
-                    allItems = items.sortedWith(compareBy { priority[it.req.status] ?: 9 })
-                    applyFilterAndRender()
+                if (err != null) {
+                    showStatus("Failed to load: ${err.message}")
+                    rv.visibility = View.GONE
+                    return@addSnapshotListener
                 }
+
+                val items = snap?.documents.orEmpty().map { doc ->
+                    val req = doc.toObject(StylingRequest::class.java) ?: StylingRequest()
+                    StylingRequestWithId(docId = doc.id, req = req)
+                }
+
+                val priority = mapOf(
+                    "OPEN" to 0,
+                    "IN_PROGRESS" to 1,
+                    "DONE" to 2,
+                    "CANCELLED" to 3
+                )
+
+                allItems = items.sortedWith(compareBy { priority[it.req.status] ?: 9 })
+                applyFilterAndRender()
+            }
     }
 
     private fun applyFilterAndRender() {
@@ -172,7 +165,6 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
         adapter.submitList(filtered)
 
         val isEmpty = filtered.isEmpty()
-
         if (isEmpty) {
             rv.visibility = View.GONE
             cardEmpty.visibility = View.VISIBLE
@@ -239,36 +231,40 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
 
         showStatus("Updating location...")
 
-        val token = CancellationTokenSource()
-        fusedClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, token.token)
-            .addOnSuccessListener { loc ->
-                if (loc == null) {
-                    showStatus("Couldn't get location (try again)")
-                    return@addOnSuccessListener
-                }
+        try {
+            val token = CancellationTokenSource()
+            fusedClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, token.token)
+                .addOnSuccessListener { loc ->
+                    if (loc == null) {
+                        showStatus("Couldn't get location (try again)")
+                        return@addOnSuccessListener
+                    }
 
-                val data = hashMapOf(
-                    "location" to mapOf(
-                        "geo" to GeoPoint(loc.latitude, loc.longitude),
-                        "updatedAt" to FieldValue.serverTimestamp()
+                    val data = hashMapOf(
+                        "location" to mapOf(
+                            "geo" to GeoPoint(loc.latitude, loc.longitude),
+                            "updatedAt" to FieldValue.serverTimestamp()
+                        )
                     )
-                )
 
-                db.collection("users").document(myUid)
-                    .set(data, SetOptions.merge())
-                    .addOnSuccessListener {
-                        // If list not empty, applyFilterAndRender will hide empty card anyway
-                        toast("Location saved")
-                        if (allItems.isEmpty()) showStatus("Location updated")
-                    }
-                    .addOnFailureListener { e ->
-                        showStatus("Failed saving location: ${e.message}")
-                        toast("Failed saving location")
-                    }
-            }
-            .addOnFailureListener { e ->
-                showStatus("Location error: ${e.message}")
-            }
+                    db.collection("users").document(myUid)
+                        .set(data, SetOptions.merge())
+                        .addOnSuccessListener {
+                            toast("Location saved")
+                            if (allItems.isEmpty()) showStatus("Location updated")
+                        }
+                        .addOnFailureListener { e ->
+                            showStatus("Failed saving location: ${e.message}")
+                            toast("Failed saving location")
+                        }
+                }
+                .addOnFailureListener { e ->
+                    showStatus("Location error: ${e.message}")
+                }
+        } catch (e: Exception) {
+            //  לא להפיל את המסך בגלל Location/Play services
+            showStatus("Location init error: ${e.message}")
+        }
     }
 
     private fun hasLocationPermission(): Boolean {
@@ -297,6 +293,11 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
         cardEmpty.visibility = View.VISIBLE
         tvEmpty.visibility = View.VISIBLE
         tvEmpty.text = msg
+    }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        requestsListener?.remove()
+        requestsListener = null
     }
 
     private fun toast(msg: String) {
