@@ -77,30 +77,24 @@ class SharedClosetDetailsFragment : Fragment(R.layout.fragment_shared_closet_det
                 try {
                     setLoading(true)
 
-                    // ✅ יצירת suggestion גלובלי (כמו אצלך)
+                    //  יצירת suggestion גלובלי
                     val suggestion = OutfitSuggestion(
                         suggestionId = "",
                         ownerUid = ownerUid,
-                        outfitId = closetId, // שימי לב: כאן משתמשים ב-outfitId לשדה "target". כדי לא לשבור מודל.
+                        targetType = "CLOSET",
+                        targetId = closetId,
                         suggesterUid = myUid,
                         suggestedItemIds = selected,
                         note = "Suggestion from shared closet subset",
-                        status = "PENDING"
+                        status = "PENDING",
+                        createdAt = com.google.firebase.Timestamp.now()
                     )
 
-                    val docRef = db.collection("outfit_suggestions").document()
-                    val data = hashMapOf(
-                        "ownerUid" to suggestion.ownerUid,
-                        "outfitId" to suggestion.outfitId,
-                        "suggesterUid" to suggestion.suggesterUid,
-                        "suggestedItemIds" to suggestion.suggestedItemIds,
-                        "note" to suggestion.note,
-                        "status" to "PENDING",
-                        "createdAt" to FieldValue.serverTimestamp()
-                    )
-                    docRef.set(data).await()
 
-                    Toast.makeText(requireContext(), "Suggestion sent ✅", Toast.LENGTH_SHORT).show()
+                    suggestionsRepo.createSuggestion(suggestion)
+
+
+                    Toast.makeText(requireContext(), "Suggestion sent ", Toast.LENGTH_SHORT).show()
                     findNavController().popBackStack()
 
                 } catch (e: Exception) {
@@ -125,7 +119,7 @@ class SharedClosetDetailsFragment : Fragment(R.layout.fragment_shared_closet_det
             try {
                 setLoading(true)
 
-                // 1) להביא grant כדי לדעת איזה itemIds מותר לראות
+                //  להביא grant כדי לדעת איזה itemIds מותר לראות
                 val grants: List<AccessGrant> = grantsRepo.getSharedClosetGrantsForMe(myUid)
                 val g = grants.firstOrNull { it.ownerUid == ownerUid && it.resourceId == closetId }
 

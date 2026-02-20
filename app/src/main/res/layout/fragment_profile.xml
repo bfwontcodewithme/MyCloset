@@ -5,66 +5,148 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="20dp"
-    android:background="#FFF1F6">
+    android:background="@drawable/bg_glitter">
 
-    <TextView
-        android:id="@+id/tvProfileTitle"
-        android:layout_width="wrap_content"
+    <!-- Profile Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardProfile"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Profile"
-        android:textStyle="bold"
-        android:textSize="22sp"
-        android:textColor="#AD1457"
+        app:cardCornerRadius="22dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/pink_outline_variant"
+        app:cardBackgroundColor="#CCFFFFFF"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <TextView
-        android:id="@+id/tvUserEmail"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Email: -"
-        android:textSize="15sp"
-        android:textColor="#444444"
-        android:layout_marginTop="14dp"
-        app:layout_constraintTop_toBottomOf="@id/tvProfileTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="18dp">
 
-    <Button
-        android:id="@+id/btnGoSettings"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Settings"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#EC407A"
-        android:layout_marginTop="18dp"
-        app:layout_constraintTop_toBottomOf="@id/tvUserEmail"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <!-- Small Avatar -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAvatar"
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                app:cardCornerRadius="27dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#33F3A7C1"
+                app:cardBackgroundColor="#22FFFFFF"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
 
-    <Button
-        android:id="@+id/btnGoSuggestions"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Suggestions Inbox"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#EC407A"
-        android:layout_marginTop="12dp"
-        app:layout_constraintTop_toBottomOf="@id/btnGoSettings"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+                <ImageView
+                    android:id="@+id/ivAvatar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="10dp"
+                    android:src="@android:drawable/ic_menu_myplaces"
+                    android:tint="@color/pink_dark"
+                    android:contentDescription="avatar"/>
+            </com.google.android.material.card.MaterialCardView>
 
-    <Button
-        android:id="@+id/btnLogoutProfile"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Logout"
-        android:textColor="#D81B60"
-        android:backgroundTint="#FFFFFF"
-        android:layout_marginTop="18dp"
-        app:layout_constraintTop_toBottomOf="@id/btnGoSuggestions"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvProfileTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Profile"
+                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:textColor="@color/pink_on_surface"
+                android:layout_marginStart="12dp"
+                app:layout_constraintStart_toEndOf="@id/cardAvatar"
+                app:layout_constraintTop_toTopOf="@id/cardAvatar"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvUserEmail"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Email: -"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="@color/pink_on_surface_variant"
+                android:layout_marginTop="6dp"
+                app:layout_constraintStart_toStartOf="@id/tvProfileTitle"
+                app:layout_constraintTop_toBottomOf="@id/tvProfileTitle"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <!-- Divider -->
+            <View
+                android:id="@+id/divider"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginTop="16dp"
+                android:background="@color/pink_outline_variant"
+                app:layout_constraintTop_toBottomOf="@id/cardAvatar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <!-- Settings -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoSettings"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:text="Settings"
+                android:textAllCaps="false"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="@color/pink_dark"
+                android:textColor="@android:color/white"
+                app:cornerRadius="18dp"
+                app:icon="@android:drawable/ic_menu_manage"
+                app:iconTint="@android:color/white"
+                app:iconGravity="textStart"
+                app:iconPadding="10dp"
+                app:layout_constraintTop_toBottomOf="@id/divider"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <!-- Suggestions -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoSuggestions"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:text="Suggestions Inbox"
+                android:textAllCaps="false"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="@color/pink_dark"
+                android:textColor="@android:color/white"
+                app:cornerRadius="18dp"
+                app:icon="@android:drawable/ic_menu_send"
+                app:iconTint="@android:color/white"
+                app:iconGravity="textStart"
+                app:iconPadding="10dp"
+                app:layout_constraintTop_toBottomOf="@id/btnGoSettings"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <!-- Logout (outlined) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogoutProfile"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:text="Logout"
+                android:textAllCaps="false"
+                android:layout_marginTop="14dp"
+                android:textColor="@color/pink_on_surface"
+                app:cornerRadius="18dp"
+                app:strokeColor="@color/pink_outline_variant"
+                app:strokeWidth="2dp"
+                app:icon="@android:drawable/ic_lock_power_off"
+                app:iconTint="@color/pink_dark"
+                app:iconGravity="textStart"
+                app:iconPadding="10dp"
+                app:layout_constraintTop_toBottomOf="@id/btnGoSuggestions"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

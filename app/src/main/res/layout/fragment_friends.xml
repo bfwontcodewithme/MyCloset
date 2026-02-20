@@ -1,66 +1,250 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@drawable/bg_glitter">
 
+    <!-- Title -->
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/tvFriendsTitle"
+        style="@style/MyCloset.Title"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Friends"
-        android:textStyle="bold"
-        android:textSize="22sp"
-        android:layout_marginBottom="10dp"/>
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <EditText
-        android:id="@+id/etSearch"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/tvFriendsSub"
+        style="@style/MyCloset.Caption"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Search by name or email"
-        android:layout_marginBottom="10dp"/>
+        android:text="Add friends, accept requests, and share outfits."
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/tvFriendsTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <Button
-        android:id="@+id/btnSearch"
-        android:layout_width="match_parent"
+    <!-- Search Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardSearch"
+        style="@style/MyCloset.Card"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Search"/>
+        android:layout_marginTop="14dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/pink_outline_variant"
+        app:layout_constraintTop_toBottomOf="@id/tvFriendsSub"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilSearch"
+                style="@style/MyCloset.TextField"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:hint="Search by name or email"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/btnSearch"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:maxLines="1"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSearch"
+                style="@style/MyCloset.Button"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:text="Go"
+                app:icon="@android:drawable/ic_menu_search"
+                app:iconPadding="0dp"
+                app:iconGravity="textStart"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Progress -->
     <ProgressBar
         android:id="@+id/progressFriends"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:visibility="gone"
-        android:layout_marginTop="10dp"/>
+        app:layout_constraintTop_toBottomOf="@id/cardSearch"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Incoming Requests -->
+    <TextView
+        android:id="@+id/tvRequestsTitle"
+        style="@style/MyCloset.Title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Requests"
+        android:textSize="18sp"
+        android:layout_marginTop="14dp"
+        app:layout_constraintTop_toBottomOf="@id/cardSearch"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardRequests"
+        style="@style/MyCloset.Card"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/pink_outline_variant"
+        app:layout_constraintTop_toBottomOf="@id/tvRequestsTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- ✅ wrapper כדי לשים Empty + Recycler -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvRequestsEmpty"
+                style="@style/MyCloset.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No requests"
+                android:padding="12dp"
+                android:visibility="gone"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvRequests"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:padding="6dp"
+                android:clipToPadding="false"/>
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- My Friends -->
     <TextView
         android:id="@+id/tvMyFriendsTitle"
-        android:layout_width="wrap_content"
+        style="@style/MyCloset.Title"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="My Friends"
-        android:textStyle="bold"
-        android:layout_marginTop="14dp"/>
+        android:textSize="18sp"
+        android:layout_marginTop="14dp"
+        app:layout_constraintTop_toBottomOf="@id/cardRequests"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvMyFriends"
-        android:layout_width="match_parent"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardMyFriends"
+        style="@style/MyCloset.Card"
+        android:layout_width="0dp"
         android:layout_height="180dp"
-        android:layout_marginTop="6dp"/>
+        android:layout_marginTop="6dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/pink_outline_variant"
+        app:layout_constraintTop_toBottomOf="@id/tvMyFriendsTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvMyFriendsEmpty"
+                style="@style/MyCloset.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No friends yet"
+                android:padding="12dp"
+                android:visibility="gone"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvMyFriends"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="6dp"
+                android:clipToPadding="false"/>
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Results -->
     <TextView
         android:id="@+id/tvResultsTitle"
-        android:layout_width="wrap_content"
+        style="@style/MyCloset.Title"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Search Results"
-        android:textStyle="bold"
-        android:layout_marginTop="14dp"/>
+        android:textSize="18sp"
+        android:layout_marginTop="14dp"
+        app:layout_constraintTop_toBottomOf="@id/cardMyFriends"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvResults"
-        android:layout_width="match_parent"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardResults"
+        style="@style/MyCloset.Card"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="6dp"/>
+        android:layout_marginTop="6dp"
+        app:cardElevation="0dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/pink_outline_variant"
+        app:layout_constraintTop_toBottomOf="@id/tvResultsTitle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvResultsEmpty"
+                style="@style/MyCloset.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Search to find people"
+                android:padding="12dp"
+                android:visibility="visible"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvResults"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="6dp"
+                android:clipToPadding="false"/>
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

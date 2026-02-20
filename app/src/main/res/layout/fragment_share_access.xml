@@ -1,65 +1,153 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:fillViewport="true"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Share"
-        android:textStyle="bold"
-        android:textSize="20sp"
-        android:layout_marginBottom="12dp"/>
-
-    <!--  choose friend -->
-    <Button
-        android:id="@+id/btnChooseFriend"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Choose Friend" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvChosenFriend"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="No friend selected"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="10dp" />
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Share Access"
+            android:textStyle="bold"
+            android:textSize="24sp"
+            android:layout_marginBottom="12dp" />
 
-    <TextView
-        android:id="@+id/tvResource"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Resource: "
-        android:layout_marginBottom="10dp"/>
+        <!-- Card: Friend -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardUseCompatPadding="true"
+            android:layout_marginBottom="12dp">
 
-    <CheckBox
-        android:id="@+id/cbViewItems"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Allow view items (closet only)"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-    <CheckBox
-        android:id="@+id/cbSuggestOutfit"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Allow suggest outfit (outfit only)"/>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Friend"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="8dp" />
 
-    <Button
-        android:id="@+id/btnShare"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Share"
-        android:layout_marginTop="16dp"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnChooseFriend"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Choose Friend"
+                    app:icon="@android:drawable/ic_menu_search"
+                    app:iconGravity="textStart"
+                    app:cornerRadius="14dp" />
 
-    <ProgressBar
-        android:id="@+id/progressShare"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_gravity="center"
-        android:layout_marginTop="12dp"/>
-</LinearLayout>
+                <TextView
+                    android:id="@+id/tvChosenFriend"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No friend selected"
+                    android:layout_marginTop="10dp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Card: Resource -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardUseCompatPadding="true"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Resource"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="6dp" />
+
+                <TextView
+                    android:id="@+id/tvResource"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Resource: "
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Card: Permissions -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardUseCompatPadding="true"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Permissions"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:layout_marginBottom="8dp" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbViewItems"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Allow view items (closet only)" />
+
+                <com.google.android.material.checkbox.MaterialCheckBox
+                    android:id="@+id/cbSuggestOutfit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Allow suggest outfit (outfit only)" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Share Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnShare"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Share"
+            app:cornerRadius="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp" />
+
+        <ProgressBar
+            android:id="@+id/progressShare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            android:layout_marginTop="14dp" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

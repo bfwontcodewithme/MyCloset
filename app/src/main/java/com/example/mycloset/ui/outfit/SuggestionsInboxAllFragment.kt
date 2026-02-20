@@ -11,17 +11,17 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mycloset.R
+import com.example.mycloset.data.model.Outfit
 import com.example.mycloset.data.model.OutfitSuggestion
+import com.example.mycloset.data.repository.OutfitsRepository
 import com.example.mycloset.data.repository.SuggestionsRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class SuggestionsInboxAllFragment : Fragment(R.layout.fragment_suggestions_inbox) {
 
     private val suggestionsRepo = SuggestionsRepository()
-    private val db by lazy { FirebaseFirestore.getInstance() }
+    private val outfitsRepo = OutfitsRepository()
 
     private lateinit var rv: RecyclerView
     private lateinit var progress: ProgressBar
@@ -44,17 +44,8 @@ class SuggestionsInboxAllFragment : Fragment(R.layout.fragment_suggestions_inbox
                 }
                 findNavController().navigate(R.id.nav_suggestion_details, b)
             },
-            onAccept = { s ->
-                applySuggestion(
-                    ownerUid = s.ownerUid,
-                    outfitId = s.outfitId,
-                    suggestionId = s.suggestionId,
-                    suggestedItemIds = s.suggestedItemIds
-                )
-            },
-            onReject = { s ->
-                updateStatus(s.suggestionId, "REJECTED")
-            }
+            onAccept = { s -> acceptSuggestionCreateNewOutfit(s) },
+            onReject = { s -> updateStatus(s.suggestionId, "REJECTED") }
         )
 
         rv.layoutManager = LinearLayoutManager(requireContext())
@@ -109,28 +100,30 @@ class SuggestionsInboxAllFragment : Fragment(R.layout.fragment_suggestions_inbox
         }
     }
 
-    private fun applySuggestion(
-        ownerUid: String,
-        outfitId: String,
-        suggestionId: String,
-        suggestedItemIds: List<String>
-    ) {
+    private fun acceptSuggestionCreateNewOutfit(s: OutfitSuggestion) {
+        val ownerUid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        if (s.ownerUid != ownerUid) return
+
         lifecycleScope.launch {
             try {
                 progress.visibility = View.VISIBLE
 
-                // update outfit itemIds
-                db.collection("users")
-                    .document(ownerUid)
-                    .collection("outfits")
-                    .document(outfitId)
-                    .update("itemIds", suggestedItemIds)
-                    .await()
+                val newName = if (s.note.isNotBlank()) {
+                    "From friend • ${s.note.take(18)}"
+                } else {
+                    "From friend"
+                }
 
-                // mark accepted
-                suggestionsRepo.updateStatus(suggestionId, "ACCEPTED")
+                val newOutfit = Outfit(
+                    ownerUid = ownerUid,
+                    name = newName,
+                    itemIds = s.suggestedItemIds
+                )
 
-                Toast.makeText(requireContext(), "Suggestion applied ✅", Toast.LENGTH_SHORT).show()
+                outfitsRepo.addOutfit(ownerUid, newOutfit)
+                suggestionsRepo.updateStatus(s.suggestionId, "ACCEPTED")
+
+                Toast.makeText(requireContext(), "Accepted ✅ New outfit created", Toast.LENGTH_SHORT).show()
                 loadAllPendingSuggestions()
 
             } catch (e: Exception) {

@@ -24,21 +24,18 @@ class SuggestionDetailsFragment : Fragment(R.layout.fragment_suggestion_details)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val ownerUid = arguments?.getString("ownerUid").orEmpty()
-        val outfitId = arguments?.getString("outfitId").orEmpty()
         val suggestionId = arguments?.getString("suggestionId").orEmpty()
+        if (suggestionId.isBlank()) {
+            Toast.makeText(requireContext(), "Missing suggestionId", Toast.LENGTH_SHORT).show()
+            findNavController().popBackStack()
+            return
+        }
 
         val tvTitle = view.findViewById<TextView>(R.id.tvSugTitle)
         val tvSub = view.findViewById<TextView>(R.id.tvSugSub)
         val btnAccept = view.findViewById<Button>(R.id.btnSugAccept)
         val btnReject = view.findViewById<Button>(R.id.btnSugReject)
         val progress = view.findViewById<ProgressBar>(R.id.progressSugDetails)
-
-        if (suggestionId.isBlank() || ownerUid.isBlank() || outfitId.isBlank()) {
-            Toast.makeText(requireContext(), "Missing data", Toast.LENGTH_SHORT).show()
-            findNavController().popBackStack()
-            return
-        }
 
         val myUid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
 
@@ -59,42 +56,42 @@ class SuggestionDetailsFragment : Fragment(R.layout.fragment_suggestion_details)
                     return@launch
                 }
 
+                // ✅ Fallback למסמכים ישנים
+                val tType = if (s.targetType.isNotBlank()) s.targetType else "OUTFIT"
+                val tId = if (s.targetId.isNotBlank()) s.targetId else s.outfitId
+
                 tvTitle.text = "Suggestion • ${s.status}"
                 tvSub.text =
-                    "From UID: ${s.suggesterUid.ifBlank { "Friend" }}\n" +
+                    "From: ${s.suggesterUid.ifBlank { "Friend" }}\n" +
+                            "Target: $tType • $tId\n" +
                             "Items: ${s.suggestedItemIds.size}\n" +
-                            "Note: ${s.note.ifBlank { "-" }}\n" +
-                            "OutfitId: ${s.outfitId}"
+                            "Note: ${s.note.ifBlank { "-" }}"
 
                 val pending = s.status == "PENDING"
-                val isOwner = (myUid == ownerUid) && (s.ownerUid == ownerUid)
+                val isOwner = myUid == s.ownerUid
 
                 btnAccept.isEnabled = isOwner && pending
                 btnReject.isEnabled = isOwner && pending
 
                 btnAccept.setOnClickListener {
-                    if (!isOwner) return@setOnClickListener
+                    if (!isOwner || !pending) return@setOnClickListener
 
                     lifecycleScope.launch {
                         try {
                             setLoading(true)
 
-                            // ✅ Create NEW outfit (do not overwrite existing)
-                            val newName = if (s.note.isNotBlank()) {
-                                "From friend • ${s.note.take(18)}"
-                            } else {
-                                "From friend"
+                            val newName = when (tType) {
+                                "CLOSET" -> if (s.note.isNotBlank()) "Closet suggestion • ${s.note.take(18)}" else "Closet suggestion"
+                                else -> if (s.note.isNotBlank()) "Outfit suggestion • ${s.note.take(18)}" else "Outfit suggestion"
                             }
 
                             val newOutfit = Outfit(
-                                ownerUid = ownerUid,
+                                ownerUid = s.ownerUid,
                                 name = newName,
                                 itemIds = s.suggestedItemIds
                             )
 
-                            outfitsRepo.addOutfit(ownerUid, newOutfit)
-
-                            // ✅ mark accepted
+                            outfitsRepo.addOutfit(s.ownerUid, newOutfit)
                             repo.updateStatus(suggestionId, "ACCEPTED")
 
                             Toast.makeText(requireContext(), "Accepted ✅ New outfit created", Toast.LENGTH_SHORT).show()
@@ -109,13 +106,13 @@ class SuggestionDetailsFragment : Fragment(R.layout.fragment_suggestion_details)
                 }
 
                 btnReject.setOnClickListener {
-                    if (!isOwner) return@setOnClickListener
+                    if (!isOwner || !pending) return@setOnClickListener
 
                     lifecycleScope.launch {
                         try {
                             setLoading(true)
-                            repo.updateStatus(suggestionId, "REJECTED")
-                            Toast.makeText(requireContext(), "Rejected ✅", Toast.LENGTH_SHORT).show()
+                            repo.updateStatus(suggestionId, "DECLINED")
+                            Toast.makeText(requireContext(), "Declined ✅", Toast.LENGTH_SHORT).show()
                             findNavController().popBackStack()
                         } catch (e: Exception) {
                             Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()

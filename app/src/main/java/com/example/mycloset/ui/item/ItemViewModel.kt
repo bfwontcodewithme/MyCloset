@@ -23,10 +23,25 @@ class ItemViewModel : ViewModel() {
         }
     }
 
+    //  load all items (My Items)
+    fun loadAllItems(userId: String) {
+        viewModelScope.launch {
+            _items.value = runCatching {
+                repository.getMyItems(userId)
+            }.getOrElse { emptyList() }
+        }
+    }
+
+    //  delete -> reload correct list
     fun deleteItem(userId: String, itemId: String, closetId: String) {
         viewModelScope.launch {
             runCatching { repository.deleteItem(userId, itemId) }
-            loadItemsForCloset(userId, closetId)
+
+            if (closetId.isBlank()) {
+                loadAllItems(userId)
+            } else {
+                loadItemsForCloset(userId, closetId)
+            }
         }
     }
 }

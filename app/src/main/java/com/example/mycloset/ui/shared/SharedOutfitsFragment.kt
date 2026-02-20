@@ -29,7 +29,6 @@ class SharedOutfitsFragment : Fragment(R.layout.fragment_shared_outfits) {
     private lateinit var rv: RecyclerView
     private lateinit var progress: ProgressBar
     private lateinit var tvEmpty: TextView
-
     private lateinit var adapter: SharedOutfitAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -39,13 +38,23 @@ class SharedOutfitsFragment : Fragment(R.layout.fragment_shared_outfits) {
         progress = view.findViewById(R.id.progressSharedOutfits)
         tvEmpty = view.findViewById(R.id.tvEmptySharedOutfits)
 
-        adapter = SharedOutfitAdapter { row ->
-            val args = Bundle().apply {
-                putString("ownerUid", row.ownerUid)
-                putString("outfitId", row.outfitId)
+        adapter = SharedOutfitAdapter(
+            onOpenDetails = { row ->
+                val args = Bundle().apply {
+                    putString("ownerUid", row.ownerUid)
+                    putString("outfitId", row.outfitId)
+                }
+                findNavController().navigate(R.id.nav_shared_outfit_details, args)
+            },
+            onSuggest = { row ->
+                // ✅ פה זה ה-Suggest
+                val args = Bundle().apply {
+                    putString("ownerUid", row.ownerUid)
+                    putString("outfitId", row.outfitId)
+                }
+                findNavController().navigate(R.id.nav_send_suggestion, args)
             }
-            findNavController().navigate(R.id.nav_shared_outfit_details, args)
-        }
+        )
 
         rv.layoutManager = LinearLayoutManager(requireContext())
         rv.adapter = adapter
@@ -75,7 +84,7 @@ class SharedOutfitsFragment : Fragment(R.layout.fragment_shared_outfits) {
                 setLoading(true)
                 tvEmpty.visibility = View.GONE
 
-                // 1) להביא Grants שקיבלתי לאאוטפיטים עם SUGGEST_OUTFIT
+                // 1) Grants שקיבלתי לאאוטפיטים עם SUGGEST_OUTFIT
                 val grants: List<AccessGrant> = grantsRepo.getSharedOutfitGrantsForMe(myUid)
 
                 if (grants.isEmpty()) {
@@ -95,13 +104,13 @@ class SharedOutfitsFragment : Fragment(R.layout.fragment_shared_outfits) {
                             .get()
                             .await()
 
-                        val outfit = doc.toObject(Outfit::class.java)
-                        if (outfit == null) null
-                        else SharedOutfitRow(
+                        val outfit = doc.toObject(Outfit::class.java) ?: return@async null
+
+                        SharedOutfitRow(
                             ownerUid = g.ownerUid,
                             outfitId = g.resourceId,
                             outfitName = outfit.name,
-                            sharedBy = g.ownerUid // בשלב 1 מציגים ownerUid (אפשר לשפר לשם/מייל בשלב 2)
+                            sharedBy = g.granteeEmail.ifBlank { g.ownerUid } // (אפשר לשפר אח"כ לשם)
                         )
                     }
                 }.awaitAll().filterNotNull()

@@ -13,9 +13,9 @@ import androidx.navigation.fragment.findNavController
 import com.example.mycloset.R
 import com.example.mycloset.data.model.Outfit
 import com.example.mycloset.data.model.OutfitSuggestion
+import com.example.mycloset.data.repository.GrantsRepository
 import com.example.mycloset.data.repository.SuggestionsRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -23,7 +23,8 @@ import kotlinx.coroutines.tasks.await
 class SendSuggestionFragment : Fragment(R.layout.fragment_send_suggestion) {
 
     private val db by lazy { FirebaseFirestore.getInstance() }
-    private val repo = SuggestionsRepository()
+    private val suggestionsRepo = SuggestionsRepository()
+    private val grantsRepo = GrantsRepository()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -51,7 +52,7 @@ class SendSuggestionFragment : Fragment(R.layout.fragment_send_suggestion) {
         }
 
         tvTitle.text = "Send Suggestion"
-        tvSub.text = "You are suggesting changes to an outfit"
+        tvSub.text = "Suggest changes to this outfit"
 
         fun setLoading(loading: Boolean) {
             progress.visibility = if (loading) View.VISIBLE else View.GONE
@@ -63,7 +64,22 @@ class SendSuggestionFragment : Fragment(R.layout.fragment_send_suggestion) {
                 try {
                     setLoading(true)
 
-                    // 1) Load the outfit to get current itemIds (simple first version)
+                    //   Permission check (must have SUGGEST_OUTFIT)
+                    val allowed = grantsRepo.hasGrant(
+                        ownerUid = ownerUid,
+                        granteeUid = myUid,
+                        resourceType = "OUTFIT",
+                        resourceId = outfitId,
+                        permission = "SUGGEST_OUTFIT"
+                    )
+
+                    if (!allowed) {
+                        Toast.makeText(requireContext(), "No permission to suggest for this outfit", Toast.LENGTH_LONG).show()
+                        findNavController().popBackStack()
+                        return@launch
+                    }
+
+                    //  Load outfit (owner side) to copy itemIds
                     val outfitDoc = db.collection("users")
                         .document(ownerUid)
                         .collection("outfits")
@@ -79,30 +95,21 @@ class SendSuggestionFragment : Fragment(R.layout.fragment_send_suggestion) {
                         return@launch
                     }
 
-                    // 2) Create suggestion in GLOBAL collection: outfit_suggestions
-                    // חשוב: השדות כאן חייבים להתאים למה שיש לך ב-Firestore (suggestedItemIds / suggesterUid / ownerUid / outfitId)
+                    //  Create suggestion
                     val suggestion = OutfitSuggestion(
                         suggestionId = "",
                         ownerUid = ownerUid,
-                        outfitId = outfitId,
+                        targetType = "OUTFIT",
+                        targetId = outfitId,
                         suggesterUid = myUid,
                         suggestedItemIds = suggestedItemIds,
                         note = etNote.text.toString().trim(),
-                        status = "PENDING"
+                        status = "PENDING",
+                        createdAt = com.google.firebase.Timestamp.now()
                     )
 
-                    // אם ה-Repository שלך כרגע יוצר לנסטד, אנחנו ניצור גלובלי כאן ישירות כדי לא לשבור כלום
-                    val docRef = db.collection("outfit_suggestions").document()
-                    val data = hashMapOf(
-                        "ownerUid" to suggestion.ownerUid,
-                        "outfitId" to suggestion.outfitId,
-                        "suggesterUid" to suggestion.suggesterUid,
-                        "suggestedItemIds" to suggestion.suggestedItemIds,
-                        "note" to suggestion.note,
-                        "status" to "PENDING",
-                        "createdAt" to FieldValue.serverTimestamp()
-                    )
-                    docRef.set(data).await()
+
+                    suggestionsRepo.createSuggestion(suggestion)
 
                     Toast.makeText(requireContext(), "Suggestion sent ✅", Toast.LENGTH_SHORT).show()
                     findNavController().popBackStack()

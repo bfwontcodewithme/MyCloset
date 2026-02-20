@@ -78,9 +78,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                     }
 
             } catch (e: ApiException) {
-                // פה את מקבלת קוד מדויק כמו 10 / 12500
-                // 10 = DEVELOPER_ERROR (SHA-1 / client mismatch)
-                // 12500 = config/play-services issue
+
                 toast("Google sign-in failed (ApiException ${e.statusCode}): ${e.message}")
             } catch (e: Exception) {
                 toast("Google sign-in failed: ${e.javaClass.simpleName}: ${e.message}")
@@ -187,20 +185,41 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
         ref.get()
             .addOnSuccessListener { snap ->
+                val defaultName = email.substringBefore("@")
+
+                val base = hashMapOf(
+                    "userEmail" to email,
+                    "userName" to defaultName,
+                    "createdAt" to FieldValue.serverTimestamp(),
+                    "userFriendsUids" to emptyList<String>(),
+                    "fcmToken" to "",
+                    "profileImageUrl" to ""
+                )
+
                 if (snap.exists()) {
-                    updateFcmToken()
-                    routeByRole(uid)
-                } else {
-                    val data = hashMapOf(
-                        "email" to email,
-                        "role" to "USER",
-                        "createdAt" to FieldValue.serverTimestamp()
-                    )
-                    ref.set(data)
+                    //  אם המסמך קיים אבל חסרים שדות / role ריק -> למזג (לא לדרוס)
+                    val roleNow = snap.getString("role").orEmpty().trim()
+                    if (roleNow.isBlank()) base["role"] = "USER"
+                    ref.set(base, SetOptions.merge())
                         .addOnSuccessListener {
                             updateFcmToken()
-                            routeByRole(uid) }
-                        .addOnFailureListener { e -> setLoading(false); toast("Failed saving user: ${e.message}") }
+                            routeByRole(uid)
+                        }
+                        .addOnFailureListener { e ->
+                            setLoading(false)
+                            toast("Failed updating user: ${e.message}")
+                        }
+                } else {
+                    base["role"] = "USER"
+                    ref.set(base)
+                        .addOnSuccessListener {
+                            updateFcmToken()
+                            routeByRole(uid)
+                        }
+                        .addOnFailureListener { e ->
+                            setLoading(false)
+                            toast("Failed saving user: ${e.message}")
+                        }
                 }
             }
             .addOnFailureListener { e ->
@@ -209,12 +228,13 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             }
     }
 
+
     private fun routeByRole(uid: String) {
         db.collection("users").document(uid).get()
             .addOnSuccessListener { snap ->
                 setLoading(false)
 
-                val role = snap.getString("role") ?: "REGULAR"
+                val role = snap.getString("role") ?: "USER"
 
                 if (role.uppercase() == "STYLIST") {
                     findNavController().navigate(R.id.action_global_stylist_home)

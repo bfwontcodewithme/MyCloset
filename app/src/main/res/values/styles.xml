@@ -7,7 +7,8 @@
     </style>
 
     <style name="MyCloset.Caption" parent="TextAppearance.Material3.BodySmall">
-        <item name="android:textColor">@color/md_onSurfaceVariant</item>
+        <!-- FIX: was md_onSurfaceVariant -->
+        <item name="android:textColor">@color/pink_on_surface_variant</item>
     </style>
 
     <!-- ===== CARD ===== -->
@@ -23,6 +24,13 @@
     <style name="MyCloset.Button" parent="Widget.Material3.Button">
         <item name="cornerRadius">@dimen/radius_m</item>
         <item name="android:minHeight">52dp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="MyCloset.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="cornerRadius">@dimen/radius_m</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:textAllCaps">false</item>
     </style>
 
     <!-- ===== TEXT FIELD ===== -->
@@ -32,20 +40,29 @@
         <item name="boxCornerRadiusBottomStart">@dimen/radius_m</item>
         <item name="boxCornerRadiusBottomEnd">@dimen/radius_m</item>
 
-        <item name="boxStrokeColor">@color/md_outline</item>
-        <item name="hintTextColor">@color/md_onSurfaceVariant</item>
+        <!-- FIX: was md_outline -->
+        <item name="boxStrokeColor">@color/pink_outline_variant</item>
+        <!-- FIX: was md_onSurfaceVariant -->
+        <item name="hintTextColor">@color/pink_on_surface_variant</item>
     </style>
-    <style name="MyCloset.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
-        <item name="cornerRadius">@dimen/radius_m</item>
-        <item name="android:minHeight">52dp</item>
-    </style>
+
     <!-- ===== NAV HEADER (Circle Image) ===== -->
     <style name="CircleImage">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
     </style>
 
+    <!-- SearchView colors (hint/text) -->
+    <!-- FIX: parent cannot be "" -->
+    <style name="ThemeOverlay.MyCloset.SearchView" parent="ThemeOverlay.Material3">
+        <item name="android:textColorHint">@color/pink_on_surface_variant</item>
+        <item name="android:textColorPrimary">@color/pink_on_surface</item>
+        <item name="android:textColorSecondary">@color/pink_on_surface_variant</item>
+    </style>
 
-
+    <!-- Spinner basic -->
+    <style name="Widget.MyCloset.Spinner" parent="@android:style/Widget.Spinner">
+        <item name="android:popupBackground">@android:color/white</item>
+    </style>
 
 </resources>

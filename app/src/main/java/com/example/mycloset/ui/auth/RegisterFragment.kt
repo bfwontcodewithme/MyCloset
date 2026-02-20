@@ -48,7 +48,6 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         etConfirm = view.findViewById(R.id.etConfirmPassword)
 
         rgRole = view.findViewById(R.id.rgRole)
-
         rbUser = view.findViewById(R.id.rbUser)
         rbStylist = view.findViewById(R.id.rbStylist)
 
@@ -67,7 +66,6 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         val pass = etPassword.text?.toString()?.trim().orEmpty()
         val confirm = etConfirm.text?.toString()?.trim().orEmpty()
 
-
         var ok = true
         if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             tilEmail.error = "Please enter a valid email"
@@ -83,34 +81,40 @@ class RegisterFragment : Fragment(R.layout.fragment_register) {
         }
         if (!ok) return
 
-        val role = if (rbStylist.isChecked) "STYLIST" else "REGULAR"
-
+        val role = if (rbStylist.isChecked) "STYLIST" else "USER"
+        val defaultName = email.substringBefore("@")
 
         setLoading(true)
         auth.createUserWithEmailAndPassword(email, pass)
             .addOnSuccessListener {
                 val uid = auth.currentUser?.uid ?: run {
-                    setLoading(false); return@addOnSuccessListener
+                    setLoading(false)
+                    return@addOnSuccessListener
                 }
 
                 val userDoc = hashMapOf(
-                    "email" to email,
+                    "userEmail" to email,
+                    "userName" to defaultName,
                     "role" to role,
                     "createdAt" to FieldValue.serverTimestamp(),
-                    "profileImageUrl" to null
+                    "userFriendsUids" to emptyList<String>(),
+                    "fcmToken" to "",
+                    "profileImageUrl" to ""
                 )
 
                 db.collection("users").document(uid).set(userDoc)
                     .addOnSuccessListener {
                         setLoading(false)
-
-                        if (role.uppercase() == "STYLIST") {
+                        if (role == "STYLIST") {
                             findNavController().navigate(R.id.action_global_stylist_home)
                         } else {
                             findNavController().navigate(R.id.action_global_home)
                         }
                     }
-
+                    .addOnFailureListener { e ->
+                        setLoading(false)
+                        toast("Failed to save user: ${e.message}")
+                    }
             }
             .addOnFailureListener { e ->
                 setLoading(false)
