@@ -47,9 +47,11 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:contentDescription="Outfits list"
+        android:paddingBottom="90dp"
+        android:clipToPadding="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toBottomOf="@id/tvTitleOutfits"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/fabCreateOutfit"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="12dp"/>
@@ -60,8 +62,8 @@
         android:layout_height="wrap_content"
         android:contentDescription="Create Outfit"
         app:srcCompat="@android:drawable/ic_input_add"
+        android:layout_margin="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_margin="16dp"/>
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

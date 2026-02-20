@@ -8,9 +8,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mycloset.R
+import com.google.android.material.button.MaterialButton
 
 class SharedOutfitAdapter(
-    private val onClick: (SharedOutfitRow) -> Unit
+    private val onOpenDetails: (SharedOutfitRow) -> Unit,
+    private val onSuggest: (SharedOutfitRow) -> Unit
 ) : ListAdapter<SharedOutfitRow, SharedOutfitAdapter.VH>(DIFF) {
 
     companion object {
@@ -18,7 +20,6 @@ class SharedOutfitAdapter(
             override fun areItemsTheSame(oldItem: SharedOutfitRow, newItem: SharedOutfitRow): Boolean {
                 return oldItem.ownerUid == newItem.ownerUid && oldItem.outfitId == newItem.outfitId
             }
-
             override fun areContentsTheSame(oldItem: SharedOutfitRow, newItem: SharedOutfitRow): Boolean {
                 return oldItem == newItem
             }
@@ -37,11 +38,14 @@ class SharedOutfitAdapter(
     inner class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvTitle: TextView = itemView.findViewById(R.id.tvSharedOutfitTitle)
         private val tvSub: TextView = itemView.findViewById(R.id.tvSharedOutfitSub)
+        private val btnSuggest: MaterialButton = itemView.findViewById(R.id.btnSuggestOutfit)
 
         fun bind(row: SharedOutfitRow) {
             tvTitle.text = row.outfitName.ifBlank { "Shared Outfit" }
             tvSub.text = "Shared by: ${row.sharedBy.ifBlank { row.ownerUid }}"
-            itemView.setOnClickListener { onClick(row) }
+
+            itemView.setOnClickListener { onOpenDetails(row) }
+            btnSuggest.setOnClickListener { onSuggest(row) }
         }
     }
 }

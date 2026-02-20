@@ -35,9 +35,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         view.findViewById<MaterialCardView>(R.id.cardAddItem)
             .setOnClickListener { findNavController().navigate(R.id.nav_add_item) }
 
-        // TODO: אם יהיה מסך My Items ייעודי, לשנות אליו
+        // ✅ FIX: My Items -> open ItemListFragment in "All items" mode (closetId="")
         view.findViewById<MaterialCardView>(R.id.cardMyItems)
-            .setOnClickListener { findNavController().navigate(R.id.nav_closet_list) }
+            .setOnClickListener {
+                val b = Bundle().apply {
+                    putString("closetId", "")          // All items
+                    putString("closetName", "My Items")
+                }
+                findNavController().navigate(R.id.nav_items_list, b)
+            }
 
         view.findViewById<MaterialCardView>(R.id.cardRequestStylist)
             .setOnClickListener { findNavController().navigate(R.id.nav_stylist_list) }

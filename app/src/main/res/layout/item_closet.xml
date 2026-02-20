@@ -1,52 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="4dp">
+    android:foreground="?attr/selectableItemBackground"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="#F3A7C1"
+    app:cardBackgroundColor="#CCFFFFFF"
+    app:cardUseCompatPadding="true">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:padding="12dp">
 
-        <ImageView
-            android:id="@+id/ivItem"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:scaleType="centerCrop"
-            android:background="#FCE4EC"
-            android:contentDescription="@string/item_image_desc" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardImage"
+            android:layout_width="76dp"
+            android:layout_height="76dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#22FFFFFF"
+            app:strokeWidth="1dp"
+            app:strokeColor="#33F3A7C1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-        <LinearLayout
+            <ImageView
+                android:id="@+id/ivItem"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@string/item_image_desc" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:id="@+id/tvItemName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:paddingStart="12dp">
+            android:text="Item name"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#4A0D2A"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="10dp"
+            app:layout_constraintStart_toEndOf="@id/cardImage"
+            app:layout_constraintEnd_toStartOf="@id/btnItemMenu"
+            app:layout_constraintTop_toTopOf="@id/cardImage"/>
 
-            <TextView
-                android:id="@+id/tvItemName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Item name"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:textColor="#D81B60" />
-
-            <TextView
-                android:id="@+id/tvItemMeta"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="type • color • season"
-                android:textSize="13sp"
-                android:textColor="#666666"
-                android:layout_marginTop="4dp" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/tvItemMeta"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="type • color • season"
+            android:textSize="13sp"
+            android:textColor="#7A2E52"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="10dp"
+            app:layout_constraintStart_toEndOf="@id/cardImage"
+            app:layout_constraintEnd_toStartOf="@id/btnItemMenu"
+            app:layout_constraintTop_toBottomOf="@id/tvItemName"/>
 
         <ImageButton
             android:id="@+id/btnItemMenu"
@@ -54,8 +77,11 @@
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Item menu"
-            android:src="@android:drawable/ic_menu_more" />
+            android:src="@android:drawable/ic_menu_more"
+            android:tint="#7A2E52"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

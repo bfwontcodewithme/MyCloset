@@ -13,6 +13,7 @@ import com.example.mycloset.R
 import com.example.mycloset.data.model.Closet
 
 class ClosetAdapter(
+    private val showMenu: Boolean = true,
     private val onClick: (Closet) -> Unit = {},
     private val onRename: (Closet) -> Unit = {},
     private val onDelete: (Closet) -> Unit = {}
@@ -41,9 +42,15 @@ class ClosetAdapter(
 
         fun bind(c: Closet) {
             tv.text = c.closetName
-
             itemView.setOnClickListener { onClick(c) }
 
+            if (!showMenu) {
+                menuBtn.visibility = View.GONE
+                menuBtn.setOnClickListener(null)
+                return
+            }
+
+            menuBtn.visibility = View.VISIBLE
             menuBtn.setOnClickListener { anchor ->
                 val popup = PopupMenu(anchor.context, anchor)
                 popup.menu.add("Rename")

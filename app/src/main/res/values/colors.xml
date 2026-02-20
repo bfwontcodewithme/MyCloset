@@ -1,35 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Brand (Modern Blue) -->
-    <color name="md_primary">#2563EB</color>
-    <color name="md_onPrimary">#FFFFFF</color>
-    <color name="md_primaryContainer">#DBEAFE</color>
-    <color name="md_onPrimaryContainer">#0B1B4A</color>
+    <!-- Brand (same identity, works on dark too) -->
+    <color name="md_primary">#3B82F6</color>
+    <color name="md_onPrimary">#081225</color>
+    <color name="md_primaryContainer">#1E3A8A</color>
+    <color name="md_onPrimaryContainer">#DBEAFE</color>
 
     <!-- Accent -->
-    <color name="md_secondary">#14B8A6</color>
-    <color name="md_onSecondary">#FFFFFF</color>
-    <color name="md_secondaryContainer">#CCFBF1</color>
-    <color name="md_onSecondaryContainer">#003730</color>
+    <color name="md_secondary">#2DD4BF</color>
+    <color name="md_onSecondary">#002B26</color>
+    <color name="md_secondaryContainer">#115E59</color>
+    <color name="md_onSecondaryContainer">#CCFBF1</color>
 
-    <!-- Surfaces -->
-    <color name="md_surface">#FFFFFF</color>
-    <color name="md_onSurface">#0F172A</color>
+    <!-- Background / Surfaces -->
+    <color name="md_background">#0B1220</color>
+    <color name="md_surface">#0F172A</color>
+    <color name="md_onSurface">#E5E7EB</color>
 
-    <!-- Background (no purple tint) -->
-    <color name="md_surfaceVariant">#F8FAFC</color>
-    <color name="md_onSurfaceVariant">#64748B</color>
+    <color name="md_surfaceVariant">#111C33</color>
+    <color name="md_onSurfaceVariant">#94A3B8</color>
 
-    <color name="md_outline">#CBD5E1</color>
-    <color name="md_outlineVariant">#E2E8F0</color>
+    <color name="md_outline">#334155</color>
+    <color name="md_outlineVariant">#1F2A44</color>
 
     <!-- States -->
-    <color name="md_error">#DC2626</color>
-    <color name="md_onError">#FFFFFF</color>
+    <color name="md_error">#F87171</color>
+    <color name="md_onError">#1F0A0A</color>
 
     <!-- Legacy -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="pink_primary">#F48FB1</color>
+    <color name="pink_dark">#EC407A</color>
+    <color name="pink_light">#FCE4EC</color>
+    <color name="accent_glitter">#FFD1DC</color>
+    <color name="pink_on_surface">#4A0D2A</color>
+    <color name="pink_on_surface_variant">#7A2E52</color>
+    <color name="pink_outline_variant">#F3A7C1</color>
+
+    <color name="pink_on_primary">#FFFFFF</color>
+
+    <color name="pink_surface">#FFF1F6</color>
+    <color name="pink_surface_variant">#FCE4EC</color>
+
+    <color name="pink_outline">#F3A7C1</color>
+
+    <color name="pink_night_primary">#EC407A</color>
+    <color name="pink_night_on_primary">#FFFFFF</color>
+    <color name="pink_night_surface_variant">#2B1B22</color>
+    <color name="pink_night_on_surface">#FFFFFF</color>
+
+    <!-- Night - missing colors referenced by values-night-v8 -->
+    <color name="pink_night_surface">#140B10</color>
+    <color name="pink_night_on_surface_variant">#F3C7D6</color>
+    <color name="pink_night_outline">#5A3A48</color>
+    <color name="pink_night_outline_variant">#3A2330</color>
+
 
 </resources>

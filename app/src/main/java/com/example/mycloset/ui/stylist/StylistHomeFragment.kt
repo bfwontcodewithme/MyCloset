@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -17,6 +16,10 @@ import com.example.mycloset.R
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -32,20 +35,26 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
     private val fusedClient by lazy { LocationServices.getFusedLocationProviderClient(requireActivity()) }
 
     private lateinit var rv: RecyclerView
+
+    // Empty state in the new layout
+    private lateinit var cardEmpty: MaterialCardView
     private lateinit var tvEmpty: TextView
+
     private lateinit var adapter: StylingRequestsAdapter
 
-    private lateinit var btnFilterAll: Button
-    private lateinit var btnFilterOpen: Button
-    private lateinit var btnFilterInProgress: Button
-    private lateinit var btnFilterDone: Button
-    private lateinit var btnFilterCancelled: Button // ✅ NEW
+    // Filters are Chips now
+    private lateinit var chipGroup: ChipGroup
+    private lateinit var chipAll: Chip
+    private lateinit var chipOpen: Chip
+    private lateinit var chipInProgress: Chip
+    private lateinit var chipDone: Chip
+    private lateinit var chipCancelled: Chip
 
     private var requestsListener: ListenerRegistration? = null
     private var allItems: List<StylingRequestWithId> = emptyList()
 
+    // null = ALL, otherwise "OPEN"/"IN_PROGRESS"/"DONE"/"CANCELLED"
     private var currentFilter: String? = null
-    // null = ALL, אחרת "OPEN"/"IN_PROGRESS"/"DONE"/"CANCELLED"
 
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { perms ->
@@ -59,16 +68,19 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val btnLogout = view.findViewById<Button>(R.id.btnStylistLogout)
-        val btnUpdateLocation = view.findViewById<Button>(R.id.btnUpdateLocation)
+        val btnLogout = view.findViewById<MaterialButton>(R.id.btnStylistLogout)
+        val btnUpdateLocation = view.findViewById<MaterialButton>(R.id.btnUpdateLocation)
 
-        btnFilterAll = view.findViewById(R.id.btnFilterAll)
-        btnFilterOpen = view.findViewById(R.id.btnFilterOpen)
-        btnFilterInProgress = view.findViewById(R.id.btnFilterInProgress)
-        btnFilterDone = view.findViewById(R.id.btnFilterDone)
-        btnFilterCancelled = view.findViewById(R.id.btnFilterCancelled) // ✅ NEW
+        // Chips
+        chipGroup = view.findViewById(R.id.rowFilters)
+        chipAll = view.findViewById(R.id.btnFilterAll)
+        chipOpen = view.findViewById(R.id.btnFilterOpen)
+        chipInProgress = view.findViewById(R.id.btnFilterInProgress)
+        chipDone = view.findViewById(R.id.btnFilterDone)
+        chipCancelled = view.findViewById(R.id.btnFilterCancelled)
 
         rv = view.findViewById(R.id.rvStylingRequests)
+        cardEmpty = view.findViewById(R.id.cardEmpty)
         tvEmpty = view.findViewById(R.id.tvEmptyRequests)
 
         adapter = StylingRequestsAdapter(
@@ -90,24 +102,19 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
             else updateMyLocation()
         }
 
-        btnFilterAll.setOnClickListener {
-            currentFilter = null
-            applyFilterAndRender()
-        }
-        btnFilterOpen.setOnClickListener {
-            currentFilter = "OPEN"
-            applyFilterAndRender()
-        }
-        btnFilterInProgress.setOnClickListener {
-            currentFilter = "IN_PROGRESS"
-            applyFilterAndRender()
-        }
-        btnFilterDone.setOnClickListener {
-            currentFilter = "DONE"
-            applyFilterAndRender()
-        }
-        btnFilterCancelled.setOnClickListener { // ✅ NEW
-            currentFilter = "CANCELLED"
+        // Default filter: ALL
+        chipAll.isChecked = true
+        currentFilter = null
+
+        chipGroup.setOnCheckedChangeListener { _, checkedId ->
+            currentFilter = when (checkedId) {
+                R.id.btnFilterAll -> null
+                R.id.btnFilterOpen -> "OPEN"
+                R.id.btnFilterInProgress -> "IN_PROGRESS"
+                R.id.btnFilterDone -> "DONE"
+                R.id.btnFilterCancelled -> "CANCELLED"
+                else -> null
+            }
             applyFilterAndRender()
         }
 
@@ -135,9 +142,8 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .addSnapshotListener { snap, err ->
                     if (err != null) {
+                        showStatus("Failed to load: ${err.message}")
                         rv.visibility = View.GONE
-                        tvEmpty.visibility = View.VISIBLE
-                        tvEmpty.text = "Failed to load requests: ${err.message}"
                         return@addSnapshotListener
                     }
 
@@ -146,7 +152,7 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
                         StylingRequestWithId(docId = doc.id, req = req)
                     }
 
-                    // ✅ include CANCELLED too (priority)
+                    // Priority ordering
                     val priority = mapOf(
                         "OPEN" to 0,
                         "IN_PROGRESS" to 1,
@@ -155,25 +161,22 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
                     )
 
                     allItems = items.sortedWith(compareBy { priority[it.req.status] ?: 9 })
-
                     applyFilterAndRender()
                 }
     }
 
     private fun applyFilterAndRender() {
-        val filtered = if (currentFilter == null) {
-            allItems
-        } else {
-            allItems.filter { it.req.status == currentFilter }
-        }
+        val filtered = if (currentFilter == null) allItems
+        else allItems.filter { it.req.status == currentFilter }
 
         adapter.submitList(filtered)
 
         val isEmpty = filtered.isEmpty()
-        rv.visibility = if (isEmpty) View.GONE else View.VISIBLE
-        tvEmpty.visibility = if (isEmpty) View.VISIBLE else View.GONE
 
         if (isEmpty) {
+            rv.visibility = View.GONE
+            cardEmpty.visibility = View.VISIBLE
+            tvEmpty.visibility = View.VISIBLE
             tvEmpty.text = when (currentFilter) {
                 null -> "No styling requests yet"
                 "OPEN" -> "No OPEN requests"
@@ -182,6 +185,9 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
                 "CANCELLED" -> "No CANCELLED requests"
                 else -> "No requests"
             }
+        } else {
+            cardEmpty.visibility = View.GONE
+            rv.visibility = View.VISIBLE
         }
     }
 
@@ -218,8 +224,6 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
                 val finalId = bestId ?: item.docId
                 val b = Bundle().apply { putString("requestId", finalId) }
                 findNavController().navigate(R.id.nav_chat, b)
-                // ↑ אם אצלך זה עושה בעיה, תחליפי ל:
-                // findNavController().navigate(R.id.nav_chat, b)
             }
             .addOnFailureListener {
                 val b = Bundle().apply { putString("requestId", item.docId) }
@@ -253,8 +257,9 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
                 db.collection("users").document(myUid)
                     .set(data, SetOptions.merge())
                     .addOnSuccessListener {
-                        showStatus("Location updated")
+                        // If list not empty, applyFilterAndRender will hide empty card anyway
                         toast("Location saved")
+                        if (allItems.isEmpty()) showStatus("Location updated")
                     }
                     .addOnFailureListener { e ->
                         showStatus("Failed saving location: ${e.message}")
@@ -288,6 +293,8 @@ class StylistHomeFragment : Fragment(R.layout.fragment_stylist_home) {
     }
 
     private fun showStatus(msg: String) {
+        rv.visibility = View.GONE
+        cardEmpty.visibility = View.VISIBLE
         tvEmpty.visibility = View.VISIBLE
         tvEmpty.text = msg
     }

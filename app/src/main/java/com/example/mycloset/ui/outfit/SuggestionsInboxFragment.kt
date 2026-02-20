@@ -37,24 +37,19 @@ class SuggestionsInboxFragment : Fragment(R.layout.fragment_suggestions_inbox) {
 
         adapter = SuggestionsAdapter(
             onOpen = { s ->
-                val b = Bundle().apply {
-                    putString("ownerUid", s.ownerUid)
-                    putString("outfitId", s.outfitId)
-                    putString("suggestionId", s.suggestionId)
-                }
+                val b = Bundle().apply { putString("suggestionId", s.suggestionId) }
                 findNavController().navigate(R.id.nav_suggestion_details, b)
             },
-            onAccept = { s ->
-                applySuggestion(
-                    ownerUid = s.ownerUid,
-                    outfitId = s.outfitId,
-                    suggestionId = s.suggestionId,
-                    suggestedItemIds = s.suggestedItemIds
-                )
+
+                    onAccept = { s ->
+                val b = Bundle().apply { putString("suggestionId", s.suggestionId) }
+                findNavController().navigate(R.id.nav_suggestion_details, b)
             },
+
             onReject = { s ->
-                updateStatus(s.suggestionId, "REJECTED")
+                updateStatus(s.suggestionId, "DECLINED")
             }
+
         )
 
         rv.layoutManager = LinearLayoutManager(requireContext())

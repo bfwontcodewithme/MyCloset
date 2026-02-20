@@ -8,12 +8,14 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.widget.ArrayAdapter
+import android.widget.ImageView
 import com.example.mycloset.R
 import com.example.mycloset.data.model.Item
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -29,7 +31,6 @@ class ItemListFragment : Fragment(R.layout.fragment_items_list) {
     private var closetNameArg: String = ""
     private var userId: String? = null
 
-    // ✅ for filtering
     private var allItems: List<Item> = emptyList()
     private var currentQuery: String = ""
     private var selectedType: String = "All"
@@ -47,19 +48,17 @@ class ItemListFragment : Fragment(R.layout.fragment_items_list) {
         val tvEmpty = view.findViewById<TextView>(R.id.tvEmpty)
         val fab = view.findViewById<FloatingActionButton>(R.id.fabAddItem)
 
-        // ✅ new ui
         val sv = view.findViewById<SearchView>(R.id.svItems)
         val spType = view.findViewById<Spinner>(R.id.spType)
         val spColor = view.findViewById<Spinner>(R.id.spColor)
         val spSeason = view.findViewById<Spinner>(R.id.spSeason)
 
-        if (closetIdArg.isBlank()) {
-            tvEmpty.visibility = View.VISIBLE
-            tvEmpty.text = "Missing closetId"
-            return
-        }
+        // ✅ Make SearchView text/icons readable + pink
+        styleSearchView(sv)
 
-        if (closetNameArg.isNotBlank()) {
+        if (closetIdArg.isBlank()) {
+            requireActivity().title = "My Items"
+        } else if (closetNameArg.isNotBlank()) {
             requireActivity().title = closetNameArg
         }
 
@@ -76,7 +75,7 @@ class ItemListFragment : Fragment(R.layout.fragment_items_list) {
             onClick = { item ->
                 val args = Bundle().apply {
                     putString("itemId", item.id)
-                    putString("closetId", closetIdArg)
+                    putString("closetId", if (closetIdArg.isBlank()) item.closetId else closetIdArg)
                     putString("closetName", closetNameArg)
                 }
                 findNavController().navigate(
@@ -92,7 +91,6 @@ class ItemListFragment : Fragment(R.layout.fragment_items_list) {
         rv.layoutManager = LinearLayoutManager(requireContext())
         rv.adapter = adapter
 
-        // ✅ Search listeners
         sv.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean = true
             override fun onQueryTextChange(newText: String?): Boolean {
@@ -102,12 +100,10 @@ class ItemListFragment : Fragment(R.layout.fragment_items_list) {
             }
         })
 
-        // Observe items
         viewModel.items.observe(viewLifecycleOwner) { itemList ->
             allItems = itemList
 
             setupSpinners(spType, spColor, spSeason, allItems) {
-                // callback whenever selection changes
                 selectedType = spType.selectedItem?.toString() ?: "All"
                 selectedColor = spColor.selectedItem?.toString() ?: "All"
                 selectedSeason = spSeason.selectedItem?.toString() ?: "All"
@@ -119,20 +115,50 @@ class ItemListFragment : Fragment(R.layout.fragment_items_list) {
         }
 
         progress.visibility = View.VISIBLE
-        viewModel.loadItemsForCloset(userId!!, closetIdArg)
+        if (closetIdArg.isBlank()) {
+            viewModel.loadAllItems(userId!!)
+        } else {
+            viewModel.loadItemsForCloset(userId!!, closetIdArg)
+        }
 
         fab.setOnClickListener {
-            val args = Bundle().apply { putString("closetId", closetIdArg) }
-            findNavController().navigate(R.id.nav_add_item, args)
+            if (closetIdArg.isBlank()) {
+                val b = Bundle().apply { putBoolean("pickMode", true) }
+                findNavController().navigate(R.id.nav_closet_list, b)
+            } else {
+                val args = Bundle().apply { putString("closetId", closetIdArg) }
+                findNavController().navigate(R.id.nav_add_item, args)
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
         val uid = userId ?: return
-        if (closetIdArg.isNotBlank()) {
+        if (closetIdArg.isBlank()) {
+            viewModel.loadAllItems(uid)
+        } else {
             viewModel.loadItemsForCloset(uid, closetIdArg)
         }
+    }
+
+    private fun styleSearchView(sv: SearchView) {
+        val textColor = ContextCompat.getColor(requireContext(), R.color.pink_on_surface)
+        val hintColor = ContextCompat.getColor(requireContext(), R.color.pink_on_surface_variant)
+        val iconColor = ContextCompat.getColor(requireContext(), R.color.pink_dark)
+
+        // EditText inside SearchView
+        val searchTextId = androidx.appcompat.R.id.search_src_text
+        val searchText = sv.findViewById<TextView>(searchTextId)
+        searchText?.setTextColor(textColor)
+        searchText?.setHintTextColor(hintColor)
+
+        // Search icon + close icon
+        val magId = androidx.appcompat.R.id.search_mag_icon
+        val closeId = androidx.appcompat.R.id.search_close_btn
+
+        sv.findViewById<ImageView>(magId)?.setColorFilter(iconColor)
+        sv.findViewById<ImageView>(closeId)?.setColorFilter(iconColor)
     }
 
     private fun applyFiltersAndRender(tvEmpty: TextView) {
@@ -175,8 +201,27 @@ class ItemListFragment : Fragment(R.layout.fragment_items_list) {
         val colors = listOf("All") + items.map { it.color }.filter { it.isNotBlank() }.distinct().sorted()
         val seasons = listOf("All") + items.map { it.season }.filter { it.isNotBlank() }.distinct().sorted()
 
+        val textColor = ContextCompat.getColor(requireContext(), R.color.pink_on_surface)
+        val dropColor = ContextCompat.getColor(requireContext(), R.color.pink_on_surface)
+
         fun setSpinner(sp: Spinner, values: List<String>) {
-            val ad = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, values)
+            val ad = object : ArrayAdapter<String>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                values
+            ) {
+                override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+                    val v = super.getView(position, convertView, parent)
+                    (v as TextView).setTextColor(textColor)
+                    return v
+                }
+
+                override fun getDropDownView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
+                    val v = super.getDropDownView(position, convertView, parent)
+                    (v as TextView).setTextColor(dropColor)
+                    return v
+                }
+            }
             ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             sp.adapter = ad
         }
@@ -189,9 +234,9 @@ class ItemListFragment : Fragment(R.layout.fragment_items_list) {
         spColor.setSelection(0)
         spSeason.setSelection(0)
 
-        spType.setOnItemSelectedListener(SimpleItemSelectedListener { onChanged() })
-        spColor.setOnItemSelectedListener(SimpleItemSelectedListener { onChanged() })
-        spSeason.setOnItemSelectedListener(SimpleItemSelectedListener { onChanged() })
+        spType.onItemSelectedListener = SimpleItemSelectedListener { onChanged() }
+        spColor.onItemSelectedListener = SimpleItemSelectedListener { onChanged() }
+        spSeason.onItemSelectedListener = SimpleItemSelectedListener { onChanged() }
     }
 
     private fun confirmDeleteItem(userId: String, closetId: String, item: Item) {

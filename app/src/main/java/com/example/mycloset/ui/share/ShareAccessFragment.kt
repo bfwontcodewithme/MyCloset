@@ -19,7 +19,7 @@ class ShareAccessFragment : Fragment(R.layout.fragment_share_access) {
     private var pickedFriendUid: String? = null
     private var pickedFriendLabel: String? = null
 
-    //  הרשימת פריטים לשיתוף subset
+    // רשימת פריטים לשיתוף subset (CLOSET)
     private var pickedItemIds: ArrayList<String> = arrayListOf()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -65,11 +65,16 @@ class ShareAccessFragment : Fragment(R.layout.fragment_share_access) {
             handle.remove<String>("pickedFriendLabel")
         }
 
-        //  מקבל את itemIds מהמסך PickItemsToShareFragment
+        // מקבל itemIds מהמסך PickItemsToShareFragment
         handle?.getLiveData<ArrayList<String>>("pickedItemIds")?.observe(viewLifecycleOwner) { ids ->
             pickedItemIds = ids ?: arrayListOf()
             Toast.makeText(requireContext(), "Selected ${pickedItemIds.size} items", Toast.LENGTH_SHORT).show()
             handle.remove<ArrayList<String>>("pickedItemIds")
+        }
+
+        // ✅ Choose Friend עובד דרך ה־nav graph שלך
+        btnChooseFriend.setOnClickListener {
+            findNavController().navigate(R.id.action_shareAccess_to_pickFriend)
         }
 
         btnShare.setOnClickListener {
@@ -93,10 +98,12 @@ class ShareAccessFragment : Fragment(R.layout.fragment_share_access) {
                 return@setOnClickListener
             }
 
-            //  CLOSET subset: קודם בוחרים items
+            // ✅ CLOSET subset: קודם בוחרים items (ושולחים גם friendUid + friendLabel)
             if (resourceType == "CLOSET" && cbViewItems.isChecked && pickedItemIds.isEmpty()) {
                 val args = Bundle().apply {
                     putString("closetId", resourceId)
+                    putString("friendUid", friendUid)
+                    putString("friendLabel", pickedFriendLabel ?: "")
                 }
                 findNavController().navigate(R.id.nav_pick_items_to_share, args)
                 return@setOnClickListener
@@ -119,7 +126,7 @@ class ShareAccessFragment : Fragment(R.layout.fragment_share_access) {
 
                     grantsRepo.upsertGrant(grant)
 
-                    Toast.makeText(requireContext(), "Shared ", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Shared ✅", Toast.LENGTH_SHORT).show()
                     findNavController().popBackStack()
 
                 } catch (e: Exception) {

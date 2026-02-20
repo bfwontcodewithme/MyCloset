@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
-    app:cardCornerRadius="12dp"
-    app:cardUseCompatPadding="true">
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="#1FAD1457"
+    app:cardBackgroundColor="#CCFFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="14dp">
+        android:padding="16dp"
+        android:orientation="vertical">
 
-        <!-- Header row: email + unread badge -->
+        <!-- Top row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,9 +31,10 @@
                 android:layout_weight="1"
                 android:text="email@gmail.com"
                 android:textStyle="bold"
-                android:textSize="16sp"/>
+                android:textSize="16sp"
+                android:textColor="#AD1457" />
 
-            <!-- ✅ Unread badge -->
+            <!-- Unread badge -->
             <TextView
                 android:id="@+id/tvReqUnread"
                 android:layout_width="wrap_content"
@@ -47,29 +51,47 @@
                 android:visibility="gone"/>
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvReqStatus"
-            android:layout_width="wrap_content"
+        <!-- Status + date -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Status: OPEN"
-            android:layout_marginTop="6dp"/>
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/tvReqDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Date: -"
-            android:layout_marginTop="4dp"/>
+            <TextView
+                android:id="@+id/tvReqStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Status: OPEN"
+                android:textStyle="bold"
+                android:textColor="#444444"
+                android:textSize="13sp" />
+
+            <View
+                android:layout_width="10dp"
+                android:layout_height="1dp" />
+
+            <TextView
+                android:id="@+id/tvReqDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date: -"
+                android:textColor="#777777"
+                android:textSize="13sp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvReqNote"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Note: -"
-            android:layout_marginTop="6dp"
+            android:textColor="#555555"
+            android:textSize="13sp"
+            android:layout_marginTop="8dp"
             android:visibility="gone"/>
 
-        <!-- ✅ Last message row -->
+        <!-- Last message preview -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -85,7 +107,8 @@
                 android:text="Last message preview..."
                 android:maxLines="1"
                 android:ellipsize="end"
-                android:textColor="#666666" />
+                android:textColor="#666666"
+                android:textSize="13sp" />
 
             <TextView
                 android:id="@+id/tvReqLastTime"
@@ -98,12 +121,18 @@
                 android:visibility="gone"/>
         </LinearLayout>
 
-        <!-- ✅ Actions (2 rows so Chat is always visible) -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="14dp"
+            android:layout_marginBottom="12dp"
+            android:background="#12AD1457"/>
+
+        <!-- Actions -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="12dp">
+            android:orientation="vertical">
 
             <!-- Row 1 -->
             <LinearLayout
@@ -111,20 +140,31 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCopyEmail"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="46dp"
                     android:layout_weight="1"
-                    android:text="Copy Email" />
+                    android:text="Copy Email"
+                    android:textAllCaps="false"
+                    android:textColor="#AD1457"
+                    app:cornerRadius="14dp"
+                    app:strokeWidth="2dp"
+                    app:strokeColor="#33AD1457" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnEmailCustomer"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="46dp"
                     android:layout_weight="1"
                     android:layout_marginStart="10dp"
-                    android:text="Email Customer" />
+                    android:text="Email"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#EC407A"
+                    app:cornerRadius="14dp" />
             </LinearLayout>
 
             <!-- Row 2 -->
@@ -134,34 +174,49 @@
                 android:orientation="horizontal"
                 android:layout_marginTop="10dp">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAccept"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="46dp"
                     android:layout_weight="1"
                     android:text="Accept"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#8E24AA"
+                    app:cornerRadius="14dp"
                     android:visibility="gone"/>
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnDone"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="46dp"
                     android:layout_weight="1"
                     android:layout_marginStart="10dp"
                     android:text="Done"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#2E7D32"
+                    app:cornerRadius="14dp"
                     android:visibility="gone"/>
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnChat"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="46dp"
                     android:layout_weight="1"
                     android:layout_marginStart="10dp"
-                    android:text="Chat" />
+                    android:text="Chat"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#1565C0"
+                    app:cornerRadius="14dp" />
             </LinearLayout>
 
         </LinearLayout>
 
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

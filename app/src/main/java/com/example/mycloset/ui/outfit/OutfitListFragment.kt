@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mycloset.R
 import com.example.mycloset.data.model.Outfit
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.async
@@ -27,7 +28,7 @@ class OutfitListFragment : Fragment(R.layout.fragment_outfit_list) {
     private lateinit var rv: RecyclerView
     private lateinit var progress: ProgressBar
     private lateinit var tvEmpty: TextView
-    private lateinit var adapter: OutfitAdapter   // ✅ חשוב – לא OutfitListAdapter
+    private lateinit var adapter: OutfitAdapter
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -47,12 +48,20 @@ class OutfitListFragment : Fragment(R.layout.fragment_outfit_list) {
                 val b = Bundle().apply {
                     putString("outfitId", row.outfit.outfitId)
                 }
+
                 findNavController().navigate(R.id.nav_suggestions_inbox, b)
             }
         )
 
         rv.layoutManager = LinearLayoutManager(requireContext())
         rv.adapter = adapter
+
+        // ✅ FIX: FAB click -> navigate to Create Outfit
+        val fab = view.findViewById<FloatingActionButton>(R.id.fabCreateOutfit)
+        fab.bringToFront()
+        fab.setOnClickListener {
+            findNavController().navigate(R.id.action_nav_outfit_list_to_nav_create_outfit)
+        }
 
         loadOutfitsWithBadges()
     }
@@ -98,7 +107,6 @@ class OutfitListFragment : Fragment(R.layout.fragment_outfit_list) {
                     return@launch
                 }
 
-                // ✅ חשוב – coroutineScope כדי ש־async יעבוד תקין
                 val rows = coroutineScope {
                     outfits.map { o ->
                         async {

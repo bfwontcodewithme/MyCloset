@@ -15,11 +15,10 @@ class FirebaseUsersDataSource(
     }
 
     suspend fun searchUsers(query: String, limit: Long = 20): List<User> {
-        val q = query.trim().lowercase()
+        val q = query.trim()
         if (q.isBlank()) return emptyList()
 
-        // חיפוש פשוט: ננסה קודם לפי אימייל מדויק, ואם לא — לפי שם (startsWith)
-        // ⚠️ Firestore לא תומך "contains" חופשי בלי אינדקס/שדה נוסף.
+
         val byEmail = db.collection("users")
             .whereEqualTo("userEmail", q)
             .limit(limit)
@@ -33,8 +32,8 @@ class FirebaseUsersDataSource(
         // startsWith על שם: צריך orderBy + startAt/endAt
         val byName = db.collection("users")
             .orderBy("userName")
-            .startAt(query)
-            .endAt(query + "\uf8ff")
+            .startAt(q)
+            .endAt(q + "\uf8ff")
             .limit(limit)
             .get()
             .await()

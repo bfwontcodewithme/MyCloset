@@ -26,10 +26,12 @@ class FirebaseSuggestionsDataSource(
 
         return snap.documents.mapNotNull { d ->
             d.toObject(OutfitSuggestion::class.java)?.copy(suggestionId = d.id)
-        }.sortedByDescending { it.createdAt }
+        }.sortedByDescending { it.createdAt?.seconds ?: 0L }
+
     }
 
-    // ✅ NEW: get suggestion by id
+
+        //  get suggestion by id
     suspend fun getById(suggestionId: String): OutfitSuggestion? {
         val doc = suggestionsCol.document(suggestionId).get().await()
         val s = doc.toObject(OutfitSuggestion::class.java) ?: return null

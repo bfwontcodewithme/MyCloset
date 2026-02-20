@@ -25,11 +25,15 @@ class ClosetListFragment : Fragment(R.layout.fragment_closet_list) {
     private var userId: String? = null
 
     private var emptyTv: TextView? = null
+    private var pickMode: Boolean = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         emptyTv = view.findViewById(R.id.tvEmptyClosets)
+        pickMode = arguments?.getBoolean("pickMode", false) ?: false
+
+        requireActivity().title = if (pickMode) "Choose Closet" else "My Closets"
 
         userId = FirebaseAuth.getInstance().currentUser?.uid
         if (userId == null) {
@@ -37,11 +41,26 @@ class ClosetListFragment : Fragment(R.layout.fragment_closet_list) {
             return
         }
 
-        adapter = ClosetAdapter(
-            onClick = { openCloset(it) },
-            onRename = { showRenameDialog(it) },
-            onDelete = { confirmDelete(it) }
-        )
+        val fabAddCloset = view.findViewById<FloatingActionButton>(R.id.fabAddCloset)
+        fabAddCloset.visibility = if (pickMode) View.GONE else View.VISIBLE
+
+        adapter = if (pickMode) {
+            // ✅ pick mode: only click, no rename/delete
+            ClosetAdapter(
+                showMenu = false,
+                onClick = { pickClosetAndGoAddItem(it) },
+                onRename = { },
+                onDelete = { }
+            )
+        } else {
+            // normal mode
+            ClosetAdapter(
+                showMenu = true,
+                onClick = { openCloset(it) },
+                onRename = { showRenameDialog(it) },
+                onDelete = { confirmDelete(it) }
+            )
+        }
 
         val rv = view.findViewById<RecyclerView>(R.id.rvClosets)
         rv.layoutManager = LinearLayoutManager(requireContext())
@@ -49,13 +68,16 @@ class ClosetListFragment : Fragment(R.layout.fragment_closet_list) {
 
         load()
 
-        view.findViewById<FloatingActionButton>(R.id.fabAddCloset).setOnClickListener {
+        fabAddCloset.setOnClickListener {
             showAddDialog()
         }
     }
 
     private fun setEmptyState(isEmpty: Boolean) {
         emptyTv?.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        if (isEmpty) {
+            emptyTv?.text = if (pickMode) "No closets yet" else "No closets yet"
+        }
     }
 
     private fun load() {
@@ -145,5 +167,18 @@ class ClosetListFragment : Fragment(R.layout.fragment_closet_list) {
             putString("closetName", closet.closetName)
         }
         findNavController().navigate(R.id.action_nav_closet_list_to_nav_closet, args)
+    }
+
+    private fun pickClosetAndGoAddItem(closet: Closet) {
+        if (closet.closetId.isBlank()) {
+            Toast.makeText(requireContext(), "Closet ID missing (try reloading)", Toast.LENGTH_SHORT).show()
+            load()
+            return
+        }
+
+        val args = Bundle().apply {
+            putString("closetId", closet.closetId)
+        }
+        findNavController().navigate(R.id.nav_add_item, args)
     }
 }
