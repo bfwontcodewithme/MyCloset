@@ -1,8 +1,14 @@
 package com.example.mycloset.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
@@ -12,6 +18,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.mycloset.R
+import com.example.mycloset.util.NotificationHelper
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -21,6 +28,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var notificationHelper: NotificationHelper
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+            if (isGranted){
+                // Permission Granted
+            } else {
+                Toast.makeText(this,
+                    "Permission denied. You won't receive updates alerts.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // ✅ Force LIGHT MODE (חשוב לפני super.onCreate)
@@ -77,6 +96,22 @@ class MainActivity : AppCompatActivity() {
             drawerLayout.setDrawerLockMode(
                 if (showDrawer) DrawerLayout.LOCK_MODE_UNLOCKED else DrawerLayout.LOCK_MODE_LOCKED_CLOSED
             )
+        }
+        val helper = NotificationHelper(this)
+        helper.createNotificationChannels()
+        checkNotificationPermission()
+
+    }
+
+    private fun checkNotificationPermission() {
+        // Only Android 13+ (API 33) needs this popup
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+                // This starts the actual system popup
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
         }
     }
 
