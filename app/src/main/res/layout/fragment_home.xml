@@ -51,7 +51,7 @@
                 app:flow_maxElementsWrap="2"
                 app:flow_horizontalGap="12dp"
                 app:flow_verticalGap="12dp"
-                app:constraint_referenced_ids="cardClosets,cardOutfits,cardAddItem,cardMyItems,cardRequestStylist,cardMyRequests,cardSharedWithMe,cardSuggestions,cardSupport"
+                app:constraint_referenced_ids="cardClosets,cardOutfits,cardAddItem,cardMyItems,cardRequestStylist,cardMyRequests,cardSharedWithMe,cardSuggestions,cardSupport,cardFriends"
                 app:layout_constraintTop_toBottomOf="@id/tvSubtitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
@@ -368,6 +368,42 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Help &amp; info"
+                        android:textAppearance="?attr/textAppearanceBodySmall"
+                        android:textColor="@color/pink_on_surface_variant"
+                        android:layout_marginTop="4dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardFriends"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardElevation="0dp"
+                app:cardCornerRadius="20dp"
+                app:cardBackgroundColor="#CCFFFFFF"
+                app:strokeWidth="1dp"
+                app:strokeColor="@color/pink_outline_variant"
+                app:layout_constraintWidth_percent="0.48">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Friends"
+                        android:textAppearance="?attr/textAppearanceTitleMedium"
+                        android:textColor="@color/pink_on_surface"/>
+
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvFriendsSubtitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Manage friends list"
                         android:textAppearance="?attr/textAppearanceBodySmall"
                         android:textColor="@color/pink_on_surface_variant"
                         android:layout_marginTop="4dp"/>

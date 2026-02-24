@@ -60,6 +60,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         view.findViewById<MaterialCardView>(R.id.cardSupport)
             .setOnClickListener { findNavController().navigate(R.id.nav_support) }
 
+        view.findViewById<MaterialCardView>(R.id.cardFriends)
+            .setOnClickListener { findNavController().navigate(R.id.nav_friends) }
+
         view.findViewById<MaterialButton>(R.id.btnLogout)
             .setOnClickListener { logout() }
 
