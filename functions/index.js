@@ -1,4 +1,4 @@
-const { onDocumentCreated } = require("firebase-functions/v2/firestore");
+const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/firestore");
 const { onCall } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const OpenAI = require("openai");
@@ -155,6 +155,62 @@ exports.notifyOnFriendRequest = onDocumentCreated(
       console.log("Friend Notification sent to:", toUid);
     } catch (error) {
       console.error("Error sending FCM:", error);
+    }
+  }
+);
+exports.onFriendRequestAccepted = onDocumentUpdated(
+  "friend_requests/{requestId}",
+  async (event) => {
+    const oldData = event.data?.before?.data();
+    const newData = event.data?.after?.data();
+
+    // Only run if status changed to ACCEPTED
+    if (oldData?.status !== "ACCEPTED" && newData?.status === "ACCEPTED") {
+      const fromUid = newData.fromUid; // The person who sent the request
+      const toUid = newData.toUid;     // The person who accepted
+      const toName = newData.toName || "A friend"; // Name of the accepter
+
+      const db = admin.firestore();
+
+      try {
+        // Update the Database
+        const batch = db.batch();
+        const fromRef = db.collection("users").doc(fromUid);
+        const toRef = db.collection("users").doc(toUid);
+
+        batch.update(fromRef, { friends: admin.firestore.FieldValue.arrayUnion(toUid) });
+        batch.update(toRef, { friends: admin.firestore.FieldValue.arrayUnion(fromUid) });
+
+        await batch.commit();
+        console.log(`Friendship linked: ${fromUid} <-> ${toUid}`);
+
+        // Tell the 'Sender' they were accepted
+        const senderDoc = await db.collection("users").doc(fromUid).get();
+        const fcmToken = senderDoc.data()?.fcmToken;
+
+        if (fcmToken) {
+          const message = {
+            token: fcmToken,
+            notification: {
+              title: "Request Accepted! 🎉",
+              body: `${toName} accepted your friend request.`,
+            },
+            android: {
+              notification: {
+                channelId: "popup_channel",
+                priority: "high"
+              }
+            }
+          };
+          await admin.messaging().send(message);
+          console.log("Success: Acceptance notification sent to sender.");
+        } else {
+          console.log("Note: Sender has no FCM token saved.");
+        }
+
+      } catch (error) {
+        console.error("Transaction/Notification failed:", error);
+      }
     }
   }
 );

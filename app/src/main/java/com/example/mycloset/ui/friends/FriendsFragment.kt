@@ -201,8 +201,8 @@ class FriendsFragment : Fragment(R.layout.fragment_friends) {
                 setLoading(true)
 
                 reqRepo.accept(r.requestId)
-                usersRepo.addFriend(myUid, r.fromUid)
-                usersRepo.addFriend(r.fromUid, myUid)
+                //usersRepo.addFriend(myUid, r.fromUid)
+                //usersRepo.addFriend(r.fromUid, myUid)
 
                 Toast.makeText(requireContext(), "Friend added ✅", Toast.LENGTH_SHORT).show()
                 loadAll(myUid)

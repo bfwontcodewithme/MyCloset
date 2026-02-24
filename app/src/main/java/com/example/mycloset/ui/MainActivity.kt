@@ -57,14 +57,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val currentUser = Firebase.auth.currentUser
-        if(currentUser != null){
-            refreshToken(currentUser.uid)
-        } else {
-            Log.d(TAG, "Skipping token refresh.")
-        }
-
-
         val toolbar = findViewById<MaterialToolbar>(R.id.mainToolbar)
         setSupportActionBar(toolbar)
 
@@ -113,7 +105,18 @@ class MainActivity : AppCompatActivity() {
             drawerLayout.setDrawerLockMode(
                 if (showDrawer) DrawerLayout.LOCK_MODE_UNLOCKED else DrawerLayout.LOCK_MODE_LOCKED_CLOSED
             )
+
+
+            if (destination.id == R.id.nav_login) {
+                val currentUser = Firebase.auth.currentUser
+                if (currentUser != null) {
+                    // We are on Login screen but we have a user -> Jump to Home!
+                    checkUserAndNavigate(currentUser.uid)
+                }
+            }
         }
+
+
         val helper = NotificationHelper(this)
         helper.createNotificationChannels()
         checkNotificationPermission()
@@ -143,4 +146,36 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
+
+    private fun checkUserAndNavigate(uid: String){
+        refreshToken(uid)
+        Log.d(TAG, "User found: ${uid}. Checking role..")
+
+        Firebase.firestore.collection("users").document(uid).get()
+            .addOnSuccessListener { documentSnapshot ->
+                val role = documentSnapshot.getString("role")
+
+                drawerLayout.post {
+                    if(navController.currentDestination?.id == R.id.nav_login) {
+                        try {
+                            if (role == "stylist") {
+                                navController.navigate(R.id.action_global_stylist_home) {
+                                    popUpTo(R.id.nav_login) { inclusive = true }
+                                }
+                            } else {
+                                navController.navigate(R.id.action_global_home) {
+                                    popUpTo(R.id.nav_login) { inclusive = true }
+                                }
+                            }
+                        }catch (e: Exception){
+                            Log.e(TAG, "Navigation Failed: ${e.message}")
+                        }
+                    }
+                }
+            }
+            .addOnFailureListener {
+                Log.e(TAG, "Error fetching user role", it)
+            }
+    }
+
 }
