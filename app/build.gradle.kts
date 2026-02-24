@@ -76,6 +76,7 @@ dependencies {
 
     // Images
     implementation("io.coil-kt:coil:2.5.0")
+    implementation(libs.firebase.firestore)
 
     // Testing (Unit Tests)
     testImplementation("junit:junit:4.13.2")

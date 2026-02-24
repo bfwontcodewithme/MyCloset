@@ -16,31 +16,42 @@ class NotificationHelper(context: Context) {
     private val appContext = context.applicationContext
 
     // IDs
-    private val CHANNEL_EVENTS = "events_channel"
+    private val CHANNEL_POPUP = "popup_channel"
+    private val CHANNEL_SILENT = "silent_channel"
 
-    // Call this in MainActivity onCreate
     fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "App Events"
-            val descriptionText = "Notifications for general app events"
-            val importance = NotificationManager.IMPORTANCE_HIGH
+            val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-            val channel = NotificationChannel(CHANNEL_EVENTS, name, importance).apply {
-                description = descriptionText
+            val popupChannel = NotificationChannel(
+                CHANNEL_POPUP,
+                "Popup Alerts",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "PopUp notification"
             }
 
-            val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+            val silentChannel = NotificationChannel(
+                CHANNEL_SILENT,
+                "Icon alerts",
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = " Icon tray notifications"
+            }
+            notificationManager.createNotificationChannels(listOf(popupChannel, silentChannel))
         }
     }
 
 
-    fun sendNotification(title: String, message: String) {
-        val builder = NotificationCompat.Builder(appContext, CHANNEL_EVENTS)
-            .setSmallIcon(R.drawable.ic_notification) // Make sure this icon exists
+    fun sendNotification(title: String, message: String, isUrgent: Boolean = true) {
+        val channelId = if(isUrgent) CHANNEL_POPUP else CHANNEL_SILENT
+        val priority = if(isUrgent) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT
+
+        val builder = NotificationCompat.Builder(appContext, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)
             .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(priority)
             .setAutoCancel(true) // Removes notification when tapped
 
         with(NotificationManagerCompat.from(appContext)) {
@@ -48,9 +59,12 @@ class NotificationHelper(context: Context) {
             if (ActivityCompat.checkSelfPermission(appContext, Manifest.permission.POST_NOTIFICATIONS)
                 == PackageManager.PERMISSION_GRANTED || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
 
-                // notify(id, builder.build())
-                // Using current time as ID ensures notifications don't overwrite each other
-                notify(System.currentTimeMillis().toInt(), builder.build())
+                val notificationId = if(isUrgent) {
+                    System.currentTimeMillis().toInt()
+                } else{
+                    1001 // Fixed id to replace the old silent one
+                }
+                notify(notificationId, builder.build())
             }
         }
     }

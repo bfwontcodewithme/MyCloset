@@ -6,7 +6,13 @@ import com.example.mycloset.data.remote.firebase.FirebaseFriendsRequestsDataSour
 class FriendsRequestsRepository(
     private val ds: FirebaseFriendsRequestsDataSource = FirebaseFriendsRequestsDataSource()
 ) {
-    suspend fun sendRequest(fromUid: String, fromEmail: String, toUid: String, toEmail: String) =
+    suspend fun sendRequest(
+        fromUid: String,
+        fromEmail: String,
+        toUid: String,
+        toEmail: String,
+        fromName: String
+    ) =
         ds.sendRequest(fromUid, fromEmail, toUid, toEmail)
 
     suspend fun getIncoming(myUid: String): List<FriendRequest> =

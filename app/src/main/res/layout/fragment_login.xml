@@ -70,7 +70,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textEmailAddress"
-                        android:textColor="@color/md_onSurface"/>
+                        android:textColor="@color/md_background"/>
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Password -->
@@ -89,7 +89,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
-                        android:textColor="@color/md_onSurface"/>
+                        android:textColor="@color/md_background"/>
                 </com.google.android.material.textfield.TextInputLayout>
                 <!-- Forgot password -->
 

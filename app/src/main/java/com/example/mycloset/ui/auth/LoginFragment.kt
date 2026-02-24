@@ -40,7 +40,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private lateinit var tvGoRegister: TextView
     private lateinit var tvForgotPassword: TextView
     private lateinit var progress: ProgressBar
-
+    private val TAG = "FCM_LoginFragment"
     private val googleLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 
@@ -71,6 +71,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                             return@addOnSuccessListener
                         }
                         ensureUserDocExists(uid = user.uid, email = user.email ?: "")
+                        updateFcmToken()
                     }
                     .addOnFailureListener { e ->
                         setLoading(false)

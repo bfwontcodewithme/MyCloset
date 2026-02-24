@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -21,15 +22,23 @@ import com.example.mycloset.R
 import com.example.mycloset.util.NotificationHelper
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlin.math.log
+
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navController: NavController
     private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var notificationHelper: NotificationHelper
-    private val requestPermissionLauncher = registerForActivityResult(
+//    private lateinit var notificationHelper: NotificationHelper
+    private lateinit var  firebaseMessaging: FirebaseMessaging
+    private val TAG = "FCM_MainActivity"
+    private val requestNotificationLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
             if (isGranted){
                 // Permission Granted
@@ -47,6 +56,14 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val currentUser = Firebase.auth.currentUser
+        if(currentUser != null){
+            refreshToken(currentUser.uid)
+        } else {
+            Log.d(TAG, "Skipping token refresh.")
+        }
+
 
         val toolbar = findViewById<MaterialToolbar>(R.id.mainToolbar)
         setSupportActionBar(toolbar)
@@ -110,11 +127,19 @@ class MainActivity : AppCompatActivity() {
                 != PackageManager.PERMISSION_GRANTED) {
 
                 // This starts the actual system popup
-                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                requestNotificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
     }
-
+    private fun refreshToken(uid: String){
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if(task.isSuccessful){
+                val token = task.result
+                Firebase.firestore.collection("users").document(uid)
+                    .update("fcmToken", token).addOnSuccessListener { Log.d(TAG, "Token refreshed for logged user") }
+            }
+        }
+    }
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }

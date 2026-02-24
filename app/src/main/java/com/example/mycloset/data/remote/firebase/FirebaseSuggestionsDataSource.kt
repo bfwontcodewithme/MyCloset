@@ -3,6 +3,9 @@ package com.example.mycloset.data.remote.firebase
 import com.example.mycloset.data.model.OutfitSuggestion
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 
 class FirebaseSuggestionsDataSource(
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -43,5 +46,26 @@ class FirebaseSuggestionsDataSource(
             .document(suggestionId)
             .update("status", status)
             .await()
+    }
+    fun listenToInbox(ownerUid: String): Flow<List<OutfitSuggestion>> = callbackFlow {
+        val query = suggestionsCol
+            .whereEqualTo("ownerUid", ownerUid)
+            .whereEqualTo("status", "PENDING")
+
+        val subscription = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                close(error)
+                return@addSnapshotListener
+            }
+
+            val suggestions = snapshot?.documents?.mapNotNull { d ->
+                d.toObject(OutfitSuggestion::class.java)?.copy(suggestionId = d.id)
+            } ?: emptyList()
+
+            trySend(suggestions)
+        }
+
+        // This keeps the stream open until the collector is destroyed
+        awaitClose { subscription.remove() }
     }
 }

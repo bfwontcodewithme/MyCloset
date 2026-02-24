@@ -2,6 +2,7 @@ package com.example.mycloset.data.repository
 
 import com.example.mycloset.data.model.OutfitSuggestion
 import com.example.mycloset.data.remote.firebase.FirebaseSuggestionsDataSource
+import kotlinx.coroutines.flow.Flow
 
 class SuggestionsRepository(
     private val ds: FirebaseSuggestionsDataSource = FirebaseSuggestionsDataSource()
@@ -17,4 +18,6 @@ class SuggestionsRepository(
 
     suspend fun updateStatus(suggestionId: String, status: String) =
         ds.updateStatus(suggestionId, status)
+
+    fun listenToInbox(ownerUid: String) = ds.listenToInbox(ownerUid)
 }

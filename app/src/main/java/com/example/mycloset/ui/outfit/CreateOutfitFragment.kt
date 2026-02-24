@@ -13,10 +13,10 @@ import com.example.mycloset.data.model.Item
 import com.example.mycloset.data.model.Outfit
 import com.example.mycloset.data.repository.ItemsRepository
 import com.example.mycloset.data.repository.OutfitsRepository
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.functions.ktx.functions
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.functions.functions
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.Locale

@@ -176,10 +176,11 @@ class FriendsFragment : Fragment(R.layout.fragment_friends) {
 
                 val me = usersRepo.getMyUserDoc(myUid)
                 val myEmail = me?.userEmail ?: ""
-
+                val senderDisplayName = me?.userName ?: me?.userEmail ?: "A user"
                 reqRepo.sendRequest(
                     fromUid = myUid,
                     fromEmail = myEmail,
+                    fromName = senderDisplayName,
                     toUid = u.userUid,
                     toEmail = u.userEmail
                 )
