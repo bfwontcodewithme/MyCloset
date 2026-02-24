@@ -105,3 +105,56 @@ exports.aiSuggestOutfit = onCall({ secrets: ["OPENAI_API_KEY"] }, async (request
 
   return { pickedItemIds: picked, reason: parsed.reason || "" };
 });
+// ✅ NEW: Notify on Friend Request (Triggered by Firestore)
+exports.notifyOnFriendRequest = onDocumentCreated(
+  "friend_requests/{requestId}",
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+
+    const data = snap.data();
+    const toUid = data?.toUid;           // The recipient
+    const fromName = data?.fromName || "Someone"; // The sender name
+
+    if (!toUid) {
+      console.log("No toUid in request");
+      return;
+    }
+
+    //Get recipient user doc to find the token
+    const userDoc = await admin.firestore().collection("users").doc(toUid).get();
+    if (!userDoc.exists) {
+      console.log("Recipient user not found:", toUid);
+      return;
+    }
+
+    const userData = userDoc.data() || {};
+    const fcmToken = userData.fcmToken;
+
+    if (!fcmToken) {
+      console.log("No FCM token for user:", toUid);
+      return;
+    }
+
+    const message = {
+      token: fcmToken,
+      notification: {
+        title: "New Friend Request 👋",
+        body: `${fromName} sent you a friend request!`,
+      },
+      android: {
+        notification: {
+          channelId: "popup_channel", // Matches your Kotlin NotificationHelper
+          priority: "high"
+        }
+      }
+    };
+
+    try {
+      await admin.messaging().send(message);
+      console.log("Friend Notification sent to:", toUid);
+    } catch (error) {
+      console.error("Error sending FCM:", error);
+    }
+  }
+);
